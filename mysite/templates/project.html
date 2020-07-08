@@ -1,0 +1,20 @@
+
+        <!-- PROJECT BLOCK START -->
+        <div class="my-3 p-3 bg-white rounded shadow-sm">
+
+          <!-- Project title -->
+          <h6 class="border-bottom border-gray pb-2 mb-0">{{ project.title }}</h6>
+
+          <!-- Project tasks list-->
+          <div sortable-type = "TaskContainer">
+            {% for t in project.task_set.all %}
+              {% include "task.html" with task=t %}
+            {% endfor %}
+          </div>
+
+          <!-- Project Footer -->
+          <small class="d-block text-right mt-3">
+            <a href="#">Load more tasks</a>
+          </small>
+        </div>
+        <!-- PROJECT BLOCK END -->

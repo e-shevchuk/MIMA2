@@ -1,0 +1,15 @@
+
+          <!-- ACTIVITY BLOCK START -->
+          <h6 class="pb-1 mb-0">{{ activity.title }}!</h6>
+
+          <!-- Activity Events list -->
+          {% for e in activity.event_set.all|dictsort:"start" %}
+            {% include "event.html" with event=e %}
+          {% endfor %}
+
+          <!-- Activity Footer -->
+          <small class="d-block text-right mt-3">
+            <a href="#">Load moreActivity events</a>
+          </small>
+          <!-- ACTIVITY BLOCK END -->
+

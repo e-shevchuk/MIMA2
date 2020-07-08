@@ -1,0 +1,83 @@
+@import-normalize ;
+
+.control_icon {
+    color: #057BFF;
+    margin-bottom: -4px;
+}
+
+.control_icon5 {
+    margin-top: -3px;
+    margin-bottom: -6px;
+    color: #057BFF;
+}
+
+.control_icon6 {
+    margin-bottom: -6px;
+    margin-top: -6px;
+    color: #057BFF;
+}
+
+[contenteditable="true"]:active,
+[contenteditable="true"]:focus {
+    border: none;
+    outline: none;
+    content: "00:00"
+}
+
+.task_title{
+    min-height: 19px;
+}
+
+.duration{
+    margin-top: -4px;
+    margin-bottom: -10px;
+    margin-right: -12px;
+}
+
+.duration-field{
+    margin-top: -3px;
+    margin-bottom: -10px;
+    margin-right: -12px;
+    text-align: right;
+}
+
+.duration-control{
+    margin-bottom: -10px;
+    margin-top: -8px;
+    margin-left: -2px;
+    margin-right: -14px;
+    color: #057BFF;
+    cursor: default;
+}
+
+
+.task_checkbox_complete{
+    width: 20px;
+    height: 20px;
+    content: url("/static/frontend/img/todo-complete.png");
+    cursor: default;
+}
+.task_checkbox_uncomplete{
+    width: 20px;
+    height: 20px;
+    content: url("/static/frontend/img/todo-uncomplete.png");
+    cursor: default;
+}
+
+.new-day{
+    background-color: #efefef;
+}
+
+.filter-button{
+    border: #0d0d0d;
+    background-color: #efefef;
+    font-size: x-small;
+    padding: 3px 10px;
+}
+
+.filterImgClass{
+    width: 15px;
+    height: 15px;
+    content: url("/static/frontend/img/filter20.png");
+
+}

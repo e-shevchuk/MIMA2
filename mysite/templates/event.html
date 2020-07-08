@@ -1,0 +1,25 @@
+
+          <!-- EVENT BLOCK START -->
+          <div class="d-flex bd-highlight">
+            <div class="bd-highlight media-body pt-1 mt-2 mb-0 small text-secondary align-bottom border-bottom border-gray">
+              <span class="font-weight-bold">{{ event.start|date:"d M" }} {{ event.start|time:"H:i" }}</span>
+              <span>({{ event.duration_min }} {{ event.duration_hours }})</span>
+            </div>
+            <div class="bd-highlight pt-1 pb-1 pr-2 mt-2 mb-0 small text-secondary align-bottom border-bottom border-gray">
+              <svg width="12" height="12" class="bd-highlight rounded border-primary bg-primary rounded-circle"</img>
+            </div>
+          </div>
+
+          <!-- Event -->
+          <div sortable-type = "TaskContainer">
+
+            <!-- Event tasks list -->
+            {% for t in event.task_set.all %}
+              {% include "task.html" with task=t %}
+            {% endfor %}
+
+            <!-- Button: "Add a new task to this event"-->
+            <div class="pt-1 pr-2 h5 text-right text-primary">+</div>
+
+          </div>
+          <!-- EVENT BLOCK END -->

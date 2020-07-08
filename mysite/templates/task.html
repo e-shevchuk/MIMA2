@@ -1,0 +1,19 @@
+
+            <!-- TASK BLOCK START -->
+            <div task_id="{{ task.id }}" class="media text-muted pt-1">
+              {% if task.complete %}
+              <img src="/static/mima/img/todo-checked.png" width="20" height="20" class="todocheckbox mr-2 rounded"</img>
+              {% else %}
+              <img src="/static/mima/img/todo-unchecked.png" width="20" height="20" class="todocheckbox mr-2 rounded"</img>
+              {% endif %}
+              <div class="media-body pb-1 mb-0 small lh-125 border-bottom border-gray">
+                <div class="d-flex bd-highlight">
+                  <div class="editable mr-auto bd-highlight" style="min-width: 100px">
+                    <span class="d-block bd-highlight">{{ task.title }}</span>
+                  </div>
+                  <img src="/static/mima/img/moved.png" width="20" height="20" class="bd-highlight bd-placeholder-img mr-2 rounded"</img>
+                  <img src="/static/mima/img/movew.png" width="20" height="20" class="bd-highlight bd-placeholder-img mr-2 rounded"</img>
+                </div>
+              </div>
+            </div>
+            <!-- TASK BLOCK END -->
