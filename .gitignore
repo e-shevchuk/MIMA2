@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# react
+node_modules
+
 # Django stuff:
 *.log
 local_settings.py
