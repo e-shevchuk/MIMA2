@@ -12,37 +12,6 @@ import django
 # Google Calendar code
 from .gcal import *
 
-# Django REST framework stuff
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from mysite.serializers import TaskSerializer
-from rest_framework import viewsets
-
-# class EventTasksList(APIView):
-#     """
-#     List all tasks for a particular
-#     """
-#
-#     def get(self, request, pk, format=None):
-#         tasks = Event.objects.get(pk=pk).task_set.all().order_by('order')
-#         serializer = TaskSerializer(tasks, many=True)
-#         return Response(serializer.data)
-#
-
-# class TaskViewSet(viewsets.ModelViewSet):
-#     """
-#     The view set to provide CRUD operation on Task
-#     """
-#
-#     queryset = Task.objects.all()
-#     serializer_class = TaskSerializer
-#     # TODO: Add permission classes (later on)
-#
-#     # def perform_create(self, serializer):
-#     #     serializer.save(user_id=self.request.user)
-
 def index(request):
 
 

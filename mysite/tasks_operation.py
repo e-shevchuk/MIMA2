@@ -34,6 +34,46 @@ def activity_tasks(activity):
     return activity_tasks
 
 
+def soft_time(available, schedule):
+    """
+    Compute time record duration that can be created within an event
+    for a task if we don't want to over-schedule event duration capacity
+
+    :param   available <timedelta>: time currently available within a task
+    :param   schedule <timedelta>: duration of a time record we want to create
+
+    """
+
+    # INITIALIZATION
+
+    # Zero duration
+    zero = timedelta(0)
+    # minimal task fragment time-record duration
+    schedule_min = timedelta(minutes=20)
+
+    # If there is now need to split the task
+    if available >= schedule:
+        # We're golden
+        return schedule
+
+    # If available time is less than minimal allowable duration
+    if available < schedule_min:
+        # return zero
+        return zero
+
+    # If task is too small to be splitted to two minimal duration fragments
+    if schedule < schedule_min * 2:
+        # return zero
+        return zero
+
+    # Compute the second part of a task after a split
+    # for it to be at least of minimal duration
+    tail = max(schedule_min, schedule - available)
+
+    # Everything that isn't a second part of a task (tail) is it's first part
+    return schedule - tail
+
+
 def redistribute(tasks: list, events: list):
     """
     Redistribute provided tasks within given events in accordance
@@ -52,52 +92,79 @@ def redistribute(tasks: list, events: list):
     # Define 1-st task & event indices for each list
     task_index, event_index = 0, 0
 
-    # Cycle parameters
-
-    # Task time to try to schedule during particular cycle iteration
-    time_left_to_schedule = timedelta(0)
-    # Way of scheduling a task time during iteration
-    soft = True
-
-    # Unbind all the provided tasks from their respective events
-    for t in tasks:
-        t.time_set.all().delete()
+    # To redistribute tasks within events, we need both. If we don't
+    if tasks_length == 0 or events_length == 0:
+        return
 
     # REDISTRIBUTION
+
+    event_time_available = events[0].time_available(pin_only=True)
+    time_left_to_schedule = tasks[0].duration
 
     # For each task
     while task_index < tasks_length and event_index < events_length:
         # Shorten cycle objects names
         task, event = tasks[task_index], events[event_index]
 
-        # It is 1st iteration or we scheduled previous iteration task completely
-        if time_left_to_schedule == timedelta(0):
-            # Pull the time to Schedule from the task of "this iteration"
-            time_left_to_schedule = task.time_unscheduled
+        # SCHEDULING
 
-        # Schedule the current task to active event
-        event_time_available, time_left_to_schedule = \
-            event.append_task(task=task, soft=soft, time=time_left_to_schedule)
+        time_record = None
 
-        # If we Scheduled this task time entirely
+        # If it is a last event in the list
+        if event_index == events_length - 1:
+            # Schedule anyway
+            time_record = event.add_task(task, time_left_to_schedule)
+            time_left_to_schedule = timedelta(0)
+
+        # Otherwise we do soft scheduling to make sure time records fit
+        # event duration
+        else:
+            # Compute the duration of time records we're going to create
+            time = soft_time(event_time_available, time_left_to_schedule)
+
+            # If we can schedule this amount of time to this event
+            if time > timedelta(0):
+                # Do it
+                time_record = event.add_task(task, time)
+                event_time_available -= time
+                time_left_to_schedule -= time
+
+        # Cleaning tiny hanging tasks
+
+        # If no time record was updated / created and => no task was appended
+        if time_record is None:
+            # Remove all currently existing time records for these Event & Task
+            Time.objects.filter(task=task, event=event).delete()
+
+        # SWITCHING TO A NEXT EVENT / TASK
+
+        # If we scheduled this task time entirely
         if time_left_to_schedule == timedelta(0):
-            # Get ready to schedule the next
+            # Get ready to schedule the next task
             task_index += 1
 
-        # If something left of this task to schedule
-        else:
-            # If it is the last event in the list
-            if event_index == events_length - 1:
-                # Turn off "soft mode" to schedule tasks to this event
-                # with not concert of its capacity on next iterations
-                soft = False
+            # If this isn't last task
+            if task_index < tasks_length:
+                # Pull next task 'time to schedule'
+                time_left_to_schedule = tasks[task_index].duration
 
-            # If there are more events to try to schedule this task
-            else:
-                # Straight-up order values for time records in current event
-                # and get ready to process the next one
-                event.straight_up_order()
-                event_index += 1
+        # If something left of this task to schedule - switch the event
+        else:
+            # Straight time records order up for the current event
+            event.straight_up_order()
+            # and get ready to process the next one
+            event_index += 1
+
+            # Remove Time records for tasks that will be scheduled
+            # to next events
+            for i in range(task_index+1, tasks_length-1):
+                Time.objects.filter(task=tasks[i], event=event).delete()
+
+            # If this isn't last event
+            if event_index < events_length:
+                # Pull next event 'available time'
+                event_time_available = \
+                    events[event_index].time_available(pin_only=True)
 
 def tasks_to_events_sync(user):
     """
@@ -124,6 +191,12 @@ def tasks_to_events_sync(user):
         events = \
             Event.objects.filter(active=True, user_id=user).order_by('start')
         events_redistr = [e for e in events if e.end > now]
+
+        # Remove the previous events non-complete and not pinned time records
+        events_prev = [e for e in events if e.end <= now]
+        time_to_clean = Time.objects.filter(event__in=events_prev)
+        time_to_clean = time_to_clean.filter(task__in=tasks_redistr)
+        time_to_clean.delete()
 
         # Redistributing tasks
         redistribute(tasks_redistr, events_redistr)

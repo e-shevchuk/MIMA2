@@ -352,6 +352,49 @@ class RedistributeTestCase(TestCase):
         self.assertEqual(e3.time_available(), timedelta(minutes=10))
         self.assertEqual(e4.time_available(), timedelta(minutes=10))
 
+    def test_redistribute_08(self):
+        """
+        First part of this test is the same as privious - it just
+        redistribute tasks. Than it redistribute these already
+        redistributed tasks again. To make sure, that redistribution
+        mechanism don't create Time Records when redistribution
+        don't require that
+
+        """
+
+        # ADDITIONAL INITIALIZATION & PARAMS TUNING
+
+        # Unpacking class parameters
+        (e1, e2, e3, e4,) = self.events
+        (t1, t2, t3, t4,) = self.tasks
+
+        # Tuning
+
+        # - Events durations:
+        e1.duration = timedelta(minutes=40)
+        e2.duration = timedelta(minutes=40)
+        e3.duration = timedelta(minutes=70)
+        e4.duration = timedelta(minutes=40)
+        # Save all
+        for e in (e1, e2, e3, e4,):
+            e.save()
+
+
+        # - Tasks: 10, 20, 120, 10 minutes (class setUp)
+
+        # TESTING
+
+        # Running
+        tasks_operation.redistribute([t1, t2, t3, t4], [e1, e2, e3, e4])
+
+        time_records_dr01 = Time.objects.filter(task__in=self.tasks)
+
+        tasks_operation.redistribute([t1, t2, t3, t4], [e1, e2, e3, e4])
+
+        time_records_dr02 = Time.objects.filter(task__in=self.tasks)
+
+        # Assessing tasks distribution
+        self.assertListEqual(list(time_records_dr01), list(time_records_dr02))
 
     def test_tasks_to_events_sync_01(self):
 
@@ -404,14 +447,54 @@ class RedistributeTestCase(TestCase):
         self.assertEqual(e4.time_available(), timedelta(minutes=20))
 
     def test_tasks_to_events_sync_02(self):
+        """
+        Invoking tasks_to_events_sync twice should cause no change in data
+        """
 
         # ADDITIONAL INITIALIZATION & PARAMS TUNING
 
-        u = User.objects.create(username='Tirion')
+        # Unpacking class parameters
+        (e1, e2, e3, e4,) = self.events
+        (t1, t2, t3, t4,) = self.tasks
+
+        # Tuning
+
+        # - Events durations:
+        e1.duration = timedelta(minutes=40)
+        e2.duration = timedelta(minutes=40)
+        e3.duration = timedelta(minutes=70)
+        e4.duration = timedelta(minutes=40)
+        # Save all
+        for e in (e1, e2, e3, e4,):
+            e.save()
+
+
+        # - Tasks: 10, 20, 120, 10 minutes (class setUp)
 
         # TESTING
 
-        tasks_operation.tasks_to_events_sync(u)
+        # Running
+        tasks_operation.redistribute([t1, t2, t3, t4], [e1, e2, e3, e4])
+
+
+        # TESTING
+
+        # Sync tasks to events
+        tasks_operation.tasks_to_events_sync(self.user)
+        # Get the latest list of time records
+        time_records_01 = \
+            list(Time.objects.filter(
+                task__in=Task.objects.filter(user_id=self.user)))
+
+        # Sync tasks to events again
+        tasks_operation.tasks_to_events_sync(self.user)
+        # Get the 2nd list of time records
+        time_records_02 = \
+            list(Time.objects.filter(
+                task__in=Task.objects.filter(user_id=self.user)))
+
+        # Compare the lists
+        self.assertListEqual(list(time_records_01), list(time_records_02))
 
 class EventTestCase(TestCase):
 
@@ -546,7 +629,7 @@ class EventTestCase(TestCase):
         self.assertEqual(t1.time_unscheduled, timedelta(minutes=10))
 
         # Running
-        event_time_available, task_time_unschedule = e1.append_task(t1)
+        event_time_available, task_time_unschedule, ti = e1.append_task(t1)
 
         # Assessing after run
         self.assertEqual(event_time_available, timedelta(minutes=60))

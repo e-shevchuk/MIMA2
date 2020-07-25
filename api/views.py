@@ -13,8 +13,8 @@ from rest_framework import viewsets
 from django.contrib.auth.decorators import login_required
 
 # Django REST framework my stuff
-from . serializers import TaskSerializer, EventSerializer, ActivitySerializer, \
-                          TimeSerializer
+from .serializers import TaskSerializer, EventSerializer, ActivitySerializer, \
+    TimeSerializer
 
 # My classes
 from mysite.models import Activity, Event, Task, Project, Time
@@ -28,7 +28,6 @@ def this_user_only(get_queryset):
     """
 
     def function_wrapper(self):
-
         # Get the current user
         current_user = self.request.user
 
@@ -51,13 +50,13 @@ def this_user_only(get_queryset):
 def index(request):
     return HttpResponse('It is api index page')
 
+
 class EventTasksList(APIView):
     """
     List all tasks for a particular
     """
 
     def get(self, request, pk):
-
         tasks = Event.objects.get(pk=pk).task_set.all().order_by('order')
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
@@ -84,7 +83,8 @@ class TimeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        tasks = Task.objects.filter(user_id=user)
+        user_events = Event.objects.filter(user_id=user)
+        tasks = Task.objects.filter(event_id__in=user_events)
         return self.queryset.filter(task_id__in=tasks)
 
 

@@ -5,7 +5,7 @@ from mysite.models import Task, Event, Activity, Project, Time
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['id', 'event_id', 'project_id',
+        fields = ['id', 'event_id', 'project_id', 'pinned',
                   'title', 'duration', 'complete', 'order', 'active']
 
     def create(self, validated_data):

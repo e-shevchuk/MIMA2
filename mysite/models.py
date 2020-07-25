@@ -48,7 +48,7 @@ class Activity(models.Model):
             complete=False)
 
         # Related time records
-        time_records = Time.objects.filter(task__in=tasks)
+        time_records = Time.objects.filter(task__in=tasks, event__isnull=False)
         # Get the activities list
         activities = \
             {tr.event.activity_id for tr in time_records if tr.event.active}
@@ -179,67 +179,127 @@ class Event(models.Model):
 
         return available
 
+    def add_task(self, task: "Task", time: timedelta = None):
+        """
+        Add a time record for a task to the end of the event tasks list.
+        If task was already there, increment scheduled time.
+
+        :param task: Task instance
+        :param time: (type: timedelta) Amount of time to schedule.
+
+        :return: time_record: (type: Time) that was create in process
+
+        """
+
+        # Creating a record or updating existing one
+        record, new = Time.objects.get_or_create(event=self, task=task)
+        record.duration = time
+        record.order = self.order_next if new else record.order
+        record.save()
+
+        return record
+
+
     def append_task(self, task: "Task", time: timedelta = None,
-                    soft: bool = True):
+                    soft: bool = True, unscheduled_forced: timedelta = None,
+                    available_forced: timedelta = None):
         """
         Append a task to the end of the event tasks list. If task was already
         there, increment scheduled time.
 
         :param task: Task instance
-        :param time_want_to_schedule: Amount of time to schedule. Can not
-                                      exceed task unscheduled time
-                                      (type: timedelta)
-        :param soft: - True (by default), than no more that time available
+        :param time: (type: timedelta) Amount of time to schedule. Can not exceed task unscheduled
+                     time
+        :param soft: (type: bool)
+                     - True (by default), than no more that time available
                        in the event can be scheduled
                      - False, schedule all the request time, but no more than
                        task unscheduled even if that exceed time available
                        in this event considering it's duration and other tasks
-                       (type: bool)
+
 
         :return: event_time_available: (type: timedelta)
         :return: task_time_unscheduled: (type: timedelta)
+        :return: time_record: (type: Time) if task was appended
         """
 
         # INITIALIZATION
 
         # Minimal duration task schedule can be splitted into
         min_split = timedelta(minutes=20)
-        # Unpack
-        time_available = self.time_available()
 
-        # If no desired time passed
-        if time is None:
-            # Consider all the unscheduled time of the task
-            time = task.time_unscheduled
-
-        # If how much time to schedule is passed
+        # Amount of event available time can be force to be considered...
+        if available_forced is not None:
+            # ...to be equal to parameter value "available_forced"
+            time_available = available_forced
+        # If no parameter is passed take it from event itself
         else:
-            # Limit it with total unscheduled time of the task
-            time = min(time, task.time_unscheduled)
+            time_available = self.time_available()
 
-        # If what we are going to schedule is zero
+        # Amount of unscheduled task time can be force to be considered...
+        if unscheduled_forced is not None:
+            # ...to be equal to parameter value "unscheduled_forced"
+            unscheduled = unscheduled_forced
+            # but take into account this time that already assigned to the event
+            if Time.objects.filter(task=task, event=self):
+                unscheduled -= Time.objects.get(event=self, task=task).duration
+
+        # If no parameter is passed take it from task itself
+        else:
+            unscheduled = task.time_unscheduled
+
+        # If no desired time passed...
+        if time is None:
+            # ...consider all the unscheduled time of the task
+            time = unscheduled
+
+        # If how much time to schedule is passed...
+        else:
+            # ... we limit it with total unscheduled time of the task
+            time = min(time, unscheduled)
+
+        # APPEND TIME COMPUTATIONS
+
+        # If it turned out that what we are going to schedule is zero...
         if time == timedelta(0):
-            # Let's call it a day
-            return time_available, task.time_unscheduled,
+            # ...let's call it a day
+
+            # But first pull the time record to return for this task & even
+            # if it exists
+            record = None
+            if Time.objects.filter(event=self, task=task):
+                record = Time.objects.get(event=self, task=task)
+            return time_available, unscheduled, record,
 
         # If soft mode
         if soft:
             # If event don't have available time
             if time_available <= timedelta(0):
                 # Don't bather =)
-                return time_available, task.time_unscheduled,
+                # But first pull the time record to return for this task & even
+                # if it exists
+                record = None
+                if Time.objects.filter(event=self, task=task):
+                    record = Time.objects.get(event=self, task=task)
+                return time_available, unscheduled, record,
 
             # If Event free time not enough for the whole task or to split it
             if time_available < time and time_available < min_split:
+
                 # Don't schedule
-                return time_available, task.time_unscheduled,
+                # But first pull the time record to return for this task & even
+                # if it exists
+                record = None
+                if Time.objects.filter(event=self, task=task):
+                    record = Time.objects.get(event=self, task=task)
+                return time_available, unscheduled, record,
 
             # If we can split task into to sub-tasks of at least minimal size
             if time_available < time and time > 2 * min_split:
 
                 # If, given we take whole available time for the first sub-task
                 # and the second sub-task will be longer than minimal duration
-                if task.time_unscheduled - time_available > min_split:
+                if unscheduled - time_available > min_split:
                     # Go for it
                     time = time_available
 
@@ -248,7 +308,8 @@ class Event(models.Model):
                 else:
                     # In this case we schedule to this even less enough time
                     # to leave next task equal to minimal duration
-                    time = task.time_unscheduled - min_split
+                    time = unscheduled - min_split
+
 
         # Creating a record or updating existing one
         record, new = Time.objects.get_or_create(event=self, task=task)
@@ -256,7 +317,7 @@ class Event(models.Model):
         record.order = self.order_next if new else record.order
         record.save()
 
-        return time_available - time, task.time_unscheduled,
+        return time_available - time, unscheduled - time, record
 
     def append_tasks(self, tasks, time_want_to_schedule: timedelta = None,
                      soft: bool = True):
@@ -353,20 +414,26 @@ class Task(models.Model):
 
 class Time(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, blank=True, null=True, on_delete=models.SET_NULL)
     duration = models.DurationField(default=timedelta(0))
     order = models.FloatField(default=0)
 
     def __str__(self):
 
-        str_params = (
-            self.task.title[:15],
-            self.task.id,
-            self.event.title[:15],
-            self.event.id,
-            self.duration.seconds,)
+        event_title = self.event.title[:15] if self.event else ''
+        event_id = self.event.id if self.event else ''
+        event_duration = self.duration.seconds if self.event else ''
 
-        return '%s (%i) => %s (%i) [%i]' % str_params
+        str_params = (
+            str(self.id),
+            self.task.title[:15],
+            str(self.task.id),
+            event_title,
+            str(event_id),
+            str(event_duration),
+        )
+
+        return '(ID: %s) %s (%s) => %s (%s) [%s]' % str_params
 
 
 class GoogleCreds(models.Model):

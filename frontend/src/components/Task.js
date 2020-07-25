@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import ContentEditable from 'react-contenteditable';
 import Numeral from "numeral";
 import TaskCheckboxComplete from './TaskCheckboxComplete';
+import TaskPin from "./TaskPin";
 
 window.Numeral = Numeral;
 
@@ -262,11 +263,13 @@ class Task extends Component {
       titleCursor,
     } = this.state;
     const {
+      pinned,
       complete,
       taskUpdate,
       title,
       allTasks,
       duration,
+      time,
     } = this.props;
 
     const displayControls = this.displayControls;
@@ -279,6 +282,10 @@ class Task extends Component {
     // FUNCTION: Change task checkbox (complete / uncomplete status)
     const updComplete = () => {
       taskUpdate({id: id, complete: !complete});
+    }
+
+    const pinToggle = () => {
+      taskUpdate({id: id, pinned: !pinned}, true);
     }
 
     if (this.props.isNewTask && title.length === 0)
@@ -400,6 +407,13 @@ class Task extends Component {
                   onClick={() => {this.intervalUpdDuration("+")}}
                   style={{display: displayControls() ? "" : "none"}}
                   >⊕</div>
+                <div
+                  className={"p-2 ml-1 bd-highlight h5 text-prime duration-control"}
+                  style={{display: displayControls() || pinned ? "" : "none"}}
+                  >
+                    <TaskPin pinned={pinned} pinToggle={pinToggle}/>
+                </div>
+
               </div>
               <div
                 className={"d-flex bd-highlight"}

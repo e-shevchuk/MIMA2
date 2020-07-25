@@ -22,12 +22,11 @@ class Event extends Component {
     // UNPACK VALUES
 
     const {
-      allTasks, getTask, filterActivity, overSheduled, duration
+      allTasks, getTask, filterActivity, overSheduled, duration, tasksByEventId,
+      timeRecords
     } = this.props;
-    // const getTask = this.props.getTask;
-    // const filterActivity = this.props.filterActivity
 
-    const taskNewIndex = tasksByEventId(this.props.id).length;
+    const taskNewIndex = tasksByEventId.length;
     const taskCreate = () => this.props.taskCreate(taskNewIndex);
 
 
@@ -110,30 +109,38 @@ class Event extends Component {
             <div
               ref={provided.innerRef}
             >
-              {tasksByEventId(this.props.id).map((task_id, index) => (
-                <Draggable key={String(task_id)} draggableId={String(task_id)}
-                           index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                    >
-                      {getTask() > 0 ?
-                        <Task
-                          {...allTasks[task_id]}
-                          allTasks={allTasks}
-                          taskUpdate={this.props.taskUpdate}
-                          taskCreate={this.props.taskCreate}
-                          index={index}
-                          taskLastCreatedId={this.props.taskLastCreatedId}
-                          taskDelete={() => this.props.taskDelete(task_id)}
-                          isNewTask={this.props.isNewTask(task_id)}
-                        /> : ""}
-                    </div>
-                  )}
-                </Draggable>
-              ))}
+              {timeRecords.map((ti, index) => {
+                const task_id = ti.task
+                return (
+                  <Draggable
+                    key={String(ti.id)}
+                    draggableId={String(ti.id)}
+                    index={index}>
+
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        {getTask() > 0 ?
+                          <Task
+                            {...allTasks[task_id]}
+                            allTasks={allTasks}
+                            time={ti}
+                            taskUpdate={this.props.taskUpdate}
+                            timePut={this.props.timePut}
+                            taskCreate={this.props.taskCreate}
+                            index={index}
+                            taskLastCreatedId={this.props.taskLastCreatedId}
+                            taskDelete={() => this.props.taskDelete(task_id)}
+                            isNewTask={this.props.isNewTask(task_id)}
+                          /> : ""}
+                      </div>
+                    )}
+
+                </Draggable>)
+              })}
               {provided.placeholder}
                 <div
                   className="media text-muted pt-1">
