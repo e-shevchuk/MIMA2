@@ -1,5 +1,5 @@
 import { allActivities, allEvents, allTasks, allTimeRecords }
-  from "./App.test_data"
+  from "../App.test_data"
 
 const mockFetch = (url, options) => {
   const urlTasks = 'https://mima.f15.dev/api/tasks/'
@@ -195,9 +195,6 @@ export const asyncWrap = (t, f, mf) => {
     }
   }
 }
-
-
-
 
 
 export default mockFetch

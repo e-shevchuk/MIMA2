@@ -45,7 +45,7 @@ function durationToJsonFormat(m = 1) {
 window.durationToJsonFormat = durationToJsonFormat;
 
 
-class Task extends Component {
+class TaskUIC extends Component {
   constructor(props) {
     super(props);
 
@@ -440,4 +440,4 @@ class Task extends Component {
   }
 }
 
-export default Task;
+export default TaskUIC;

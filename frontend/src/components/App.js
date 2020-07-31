@@ -1,14 +1,13 @@
 import React, {Component} from "react";
 import './App.css';
 import {DragDropContext} from "react-beautiful-dnd";
-import Event from "./Event"
+import Event from "./EventUIC"
 import Project from "./Project";
 import APIsecretary from "./APIsecretary";
-import getCookie from "./service_functions";
+import getCookie from "../service_functions";
 import moment from 'moment';
 import MIMApi from "./MIMApi";
 import StateSnapshotter from "./StateSnapshotter"
-import {css} from "styled-components";
 
 window.MIMApi = MIMApi;
 window.moment = moment;

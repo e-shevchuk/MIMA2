@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {Draggable, Droppable} from "react-beautiful-dnd";
-import Task from "./Task";
+import TaskUIC from "./TaskUIC";
 import moment from 'moment';
 import Moment from 'react-moment';
 
@@ -124,7 +124,7 @@ class Event extends Component {
                         {...provided.dragHandleProps}
                       >
                         {getTask() > 0 ?
-                          <Task
+                          <TaskUIC
                             {...allTasks[task_id]}
                             allTasks={allTasks}
                             time={ti}

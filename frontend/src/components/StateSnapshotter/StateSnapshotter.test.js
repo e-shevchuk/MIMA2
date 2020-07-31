@@ -1,7 +1,4 @@
-import React from 'react'
-import {cleanup, fireEvent, render} from "@testing-library/react";
-import {expect} from "@jest/globals";
-import StateSnapshotter from "./StateSnapshotter";
+import StateSnapshotter from "../StateSnapshotter";
 
 const allEvents = {"109":{"id":109,"activity_id":96,"google_calendar_id":"_6cok8chl6ss32b9k64p3eb9k74q3aba16d0k8ba668skagi4751j0di58o","title":"MIMA Dev","feasibility":1,"start":"2020-07-06T06:00:00Z","duration":"11:00:00"},"110":{"id":110,"activity_id":96,"google_calendar_id":"_8l1j8dpn8kskab9n6ork8b9k70q4ab9o6h1j4b9n750jcdhn84r44c1h6o","title":"MIMA Dev","feasibility":1,"start":"2020-07-09T06:00:00Z","duration":"11:00:00"},"111":{"id":111,"activity_id":96,"google_calendar_id":"_6gpjgd9k8grk6b9g8or4cb9k6t346ba26sr34ba164pk6e1j60rj0cpl6s","title":"MIMA Dev","feasibility":1,"start":"2020-07-08T14:00:00Z","duration":"03:00:00"}}
 const allTasks = {"292":{"id":292,"event_id":93,"project_id":null,"title":"Redirect unlogged users to Google Auth","duration":"02:00:00","complete":false,"order":2,"active":true},"293":{"id":293,"event_id":93,"project_id":null,"title":"Add Projects functionality","duration":"02:00:00","complete":false,"order":1,"active":true},"294":{"id":294,"event_id":93,"project_id":null,"title":"New tasks multiple multiline creation","duration":"02:00:00","complete":false,"order":0,"active":true}}

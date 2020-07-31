@@ -4,15 +4,15 @@
 require('whatwg-fetch')
 import { shallow } from 'enzyme';
 
-import App from "./App";
-import mockFetch from "./Mocks";
-import { asyncWrap } from "./Mocks";
+import App from "../App";
+import mockFetch from "../Mocks";
+import { asyncWrap } from "../Mocks";
 import { allActivities, allEvents, allTasks, allTimeRecords}
-  from "./App.test_data";
+  from "../../App.test_data";
 import React from "react";
 
 
-jest.mock("./App.css", () => {})
+jest.mock("../App.css", () => {})
 jest.spyOn(window, 'fetch').mockImplementation(mockFetch)
 
 // Initializing app for testing
@@ -75,7 +75,7 @@ test('MIMA API: GET - getAll: Non Empty wrapped', done => {
 
   // Call back on Success - all the validations
   let validationsOnSuccess = asyncWrap (done, (data) => {
-    const titleToBe = '288 Redirect unlogged users to Google Auth'
+    const titleToBe = '288 Redirect & all the sh*t'
     expect(data[288].title).toBe(titleToBe)
   })
 
@@ -156,19 +156,3 @@ test('MIMA API put() 01', async done => {
   // Test launch
   await appInstance.api.timeRecords.put(putData, validationsOnSuccess)
 })
-
-
-test('putTime()', async done => {
-
-  // Call back on Success - all the validations
-  let validationsOnSuccess = asyncWrap (done, () => {
-    expect(appInstance.state.allTimeRecords[9].order).toBe(-.11)
-  })
-
-  // Pre-test validation
-  expect(appInstance.state.allTimeRecords[9].order).toBe(-.1)
-  // Test launch
-  appInstance.timePut({id: 9, order: -.11}, true, validationsOnSuccess)
-})
-
-

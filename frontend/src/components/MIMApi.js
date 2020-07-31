@@ -1,5 +1,5 @@
 import React from "react";
-import getCookie from "./service_functions";
+import getCookie from "../service_functions";
 import 'whatwg-fetch'
 
 class MIMApiBase {
