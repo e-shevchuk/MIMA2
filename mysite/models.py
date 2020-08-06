@@ -17,6 +17,7 @@ GAUTH_REDIRECT_URI = 'https://mima.f15.dev/gcauth'
 FLOW_CRED_JSON = json.loads(
     '{"web":{"client_id":"399766475307-5o7r5dbnk4f9oalicl2m51ucpr41ntq0.apps.googleusercontent.com","project_id":"utility-melody-235110","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"4IxQD0oMYyRViQDpYS6N74zo","redirect_uris":["https://mima.f15.dev/gcauth"]}}')
 
+
 class Settings(models.Model):
     """
     Class to store and manage user auth2 Google creds
@@ -62,7 +63,7 @@ class Settings(models.Model):
 
 
 class Activity(models.Model):
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         'auth.User',
         related_name='activities',
         on_delete=models.CASCADE)
@@ -89,18 +90,18 @@ class Event(models.Model):
 
 
 class Project(models.Model):
-    user_id = models.ForeignKey('auth.User', related_name='projects',
-        on_delete=models.CASCADE)
+    user = models.ForeignKey('auth.User', related_name='projects',
+                             on_delete=models.CASCADE)
 
     title = models.CharField(max_length=200)
 
-class Task(models.Model):
 
-    user_id = models.ForeignKey('auth.User', related_name='tasks',
-        on_delete=models.CASCADE)
+class Task(models.Model):
+    user = models.ForeignKey('auth.User', related_name='tasks',
+                             on_delete=models.CASCADE)
 
     project = models.ForeignKey(Project, on_delete=models.SET_NULL,
-        blank=True, null=True)
+                                blank=True, null=True)
 
     title = models.CharField(max_length=200, default='', blank=True, null=True)
     pinned = models.BooleanField(default=False, blank=True, null=True)
@@ -110,27 +111,34 @@ class Task(models.Model):
     def __str__(self):
         return self.title[:15] + ' (%s)' % self.id
 
+
 class Time(models.Model):
+    user = models.ForeignKey('auth.User', related_name='time',
+                             on_delete=models.CASCADE)
     next = models.ForeignKey('self', on_delete=models.SET_NULL, null=True,
                              related_name='event_prev', blank=True)
     prev = models.ForeignKey('self', on_delete=models.SET_NULL, null=True,
                              related_name='event_next', blank=True)
-    event = models.ForeignKey(Event, on_delete=models.SET_NULL, blank=True, null=True)
+    event = models.ForeignKey(Event, on_delete=models.SET_NULL, blank=True,
+                              null=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, blank=True,
+                             null=True)
     duration = models.DurationField(default=timedelta(0))
     complete = models.BooleanField(default=False)
 
     def __str__(self):
-
         event_title = self.event.title[:15] if self.event else ''
-        event_id = self.event.id if self.event else ''
+        event = self.event.id if self.event else ''
         event_duration = self.duration.seconds if self.event else ''
+        title = self.task.title if self.task else ''
+        task_id = self.task.id if self.task else ''
 
         str_params = (
             str(self.id),
-            self.task.title[:15],
-            str(self.task.id),
+            title[:15],
+            task_id,
             event_title,
-            str(event_id),
+            str(event),
             str(event_duration),
         )
 

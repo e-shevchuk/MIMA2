@@ -1,4 +1,8 @@
 
+export const allActivities = {
+  301: {"id": 301, "title": "WorldTime cafe"},
+  302: {"id": 302, "title": "Something useless"},
+}
 
 export const allEvents = {
   "101": {
@@ -8,7 +12,6 @@ export const allEvents = {
     "activity_id": 301,
     "google_calendar_id": "_6co51j0di58o",
     "title": "WorldTime cafe",
-    "feasibility": 1,
     "start": "2020-07-01T05:00:00Z",
     "duration": "01:00:00",
   },
@@ -19,7 +22,6 @@ export const allEvents = {
     "activity_id": 301,
     "google_calendar_id": "_8l1jcdhn84r44c1h6o",
     "title": "WorldTime cafe",
-    "feasibility": 1,
     "start": "2020-07-01T06:00:00Z",
     "duration": "02:00:00",
   },
@@ -30,7 +32,6 @@ export const allEvents = {
     "activity_id": 301,
     "google_calendar_id": "_6gpl6s",
     "title": "WorldTime cafe",
-    "feasibility": 1,
     "start": "2020-07-02T14:00:00Z",
     "duration": "03:00:00",
   },
@@ -65,10 +66,6 @@ export const allTasks = {
     "complete": false,
   },
 }
-export const allActivities = {
-  301: {"id": 301, "title": "WorldTime cafe"},
-  302: {"id": 302, "title": "Something useless"},
-}
 export const allTimeRecords = {
   402: {"id":402, "task":201, "event": 101, "prev": null, "next": 403,  "duration":"00:30:00", "complete":false},
   403: {"id":403, "task":202, "event": 101, "prev": 402,  "next": 404,  "duration":"00:20:00", "complete":false},
@@ -76,6 +73,7 @@ export const allTimeRecords = {
   405: {"id":405, "task":203, "event": 102, "prev": null, "next": 406,  "duration":"00:10:00", "complete":false},
   406: {"id":406, "task":204, "event": 102, "prev": 405,  "next": null, "duration":"01:40:00", "complete":false},
 }
+
 export const allSettings = {
   501: {"id":501, "code": "min_dur", "title": "Minimal Time Record split size", "value": "00:20:00"},
 }

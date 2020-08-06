@@ -7,7 +7,7 @@ import { shallow } from 'enzyme';
 
 jest.mock("../App.css", () => {})
 import App from "../App";
-import mockFetch from "../Mocks";
+import mockFetch from "../../Mocks";
 import { softTime, eventStartCompare } from "../App";
 
 // jest.spyOn(window, 'fetch').mockImplementation(mockFetch)

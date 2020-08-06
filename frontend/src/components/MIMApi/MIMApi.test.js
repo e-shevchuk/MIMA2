@@ -5,8 +5,8 @@ require('whatwg-fetch')
 import { shallow } from 'enzyme';
 
 import App from "../App";
-import mockFetch from "../Mocks";
-import { asyncWrap } from "../Mocks";
+import mockFetch from "../../Mocks";
+import { asyncWrap } from "../../Mocks";
 import { allActivities, allEvents, allTasks, allTimeRecords}
   from "../../App.test_data";
 import React from "react";

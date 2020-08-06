@@ -39,7 +39,7 @@ def this_user_only(get_queryset):
         # If user is OK make the basic fetch
         queryset = get_queryset(self)
         # Apply user filter to the fetched data
-        result = queryset.filter(user_id=current_user)
+        result = queryset.filter(user=current_user)
 
         return result
 
@@ -81,11 +81,9 @@ class TimeViewSet(viewsets.ModelViewSet):
     serializer_class = TimeSerializer
     queryset = Time.objects.all()
 
+    @this_user_only
     def get_queryset(self):
-        user = self.request.user
-        user_events = Event.objects.filter(user_id=user)
-        tasks = Task.objects.filter(event_id__in=user_events)
-        return self.queryset.filter(task_id__in=tasks)
+        return self.queryset
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -97,7 +95,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @this_user_only
     def get_queryset(self):
-        return self.queryset.filter(active=True).order_by('start')
+        return self.queryset.order_by('start')
 
     # TODO: Add permission classes (later on)
 
@@ -112,6 +110,11 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
+
+    @this_user_only
+    def get_queryset(self):
+        return self.queryset
+
     # TODO: Add permission classes (later on)
 
     # def perform_create(self, serializer):

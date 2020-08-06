@@ -419,7 +419,7 @@ test('Schedule.buildRefsTime() 0214', ()=>{
 
 })
 
-test('Schedule.buildRefsTime() 0315', ()=>{
+test('Schedule.buildRefsTime() 0214', ()=>{
   const msg = "Schedule.addActivity(): "
   let json, acty, event, task, time
   const schedule = new Schedule()
@@ -434,6 +434,7 @@ test('Schedule.buildRefsTime() 0315', ()=>{
 
   // Build for first time record
   const buildRefsT = id => schedule.buildRefsTime(schedule.timeRecs.get(id))
+  const buildRefsE = id => schedule.buildRefsEvent(schedule.events.get(id))
 
   // Object getters
   const tr = id => schedule.timeRecs.get(id)
@@ -468,94 +469,28 @@ test('Schedule.buildRefsTime() 0315', ()=>{
   // TESTING
 
   // Build
-  buildRefsEvent(1)
-  buildRefsEvent(2)
+  buildRefsT(2)
+  buildRefsT(3)
+  buildRefsT(4)
+  buildRefsT(5)
+  buildRefsT(6)
+
+  buildRefsE(1)
+  buildRefsE(2)
+  buildRefsE(3)
 
   // Validations
 
-  expect(tr(2).prev).toBeUndefined()
-  expect(tr(2).next.id).toBe(3)
-  expect(tr(2).task.id).toBe(1)
-  expect(tr(2).event.id).toBe(1)
-  expect(tr(2).activity.id).toBe(1)
-
-  expect(t(1).prev).toBeUndefined()
-  expect(t(1).next).toBe(t(2))
-  expect(t(1).refTime).toContain(tr(2))
-  expect(t(1).refTime.length).toBe(1)
-  expect(t(1).refEvents).toContain(e(1))
-  expect(t(1).refEvents.length).toBe(1)
-  expect(t(1).activity).toBe(a(1))
+  expect(a(1).title).toBe(e(1).title)
+  expect(a(1).refEvents).toContain(e(1))
+  expect(a(1).refEvents).toContain(e(2))
+  expect(a(1).refEvents).toContain(e(3))
+  expect(a(1).refEvents.length).toBe(3)
 
   expect(e(1).activity).toBe(a(1))
-  expect(e(1).refTasks).toContain(t(1))
-  expect(e(1).refTasks).toContain(t(2))
-  expect(e(1).refTasks.length).toBe(2)
-  expect(e(1).refTasksPinned.length).toBe(0)
-  expect(e(1).refTime).toContain(tr(2))
-  expect(e(1).refTime).toContain(tr(3))
-  expect(e(1).refTime.length).toBe(2)
-
-  expect(tr(3).prev).toBe(tr(2))
-  expect(tr(3).next).toBe(tr(4))
-  expect(tr(3).task).toBe(t(2))
-  expect(tr(3).event).toBe(e(1))
-  expect(tr(2).activity).toBe(a(1))
-
-  expect(t(2).prev).toBe(t(1))
-  expect(t(2).next).toBeUndefined()
-  expect(t(2).refTime).toContain(tr(3))
-  expect(t(2).refTime).toContain(tr(4))
-  expect(t(2).refTime.length).toBe(2)
-  expect(t(2).refEvents).toContain(e(1))
-  expect(t(2).refEvents).toContain(e(2))
-  expect(t(2).refEvents.length).toBe(2)
-  expect(t(2).activity).toBe(a(1))
-
   expect(e(2).activity).toBe(a(1))
-  expect(e(2).refTasks).toContain(t(2))
-  expect(e(2).refTasks.length).toBe(1)
-  expect(e(2).refTasksPinned).toContain(t(3))
-  expect(e(2).refTasksPinned).toContain(t(4))
-  expect(e(2).refTasksPinned.length).toBe(2)
-  expect(e(2).refTime).toContain(tr(4))
-  expect(e(2).refTime.length).toBe(1)
-  expect(e(2).refTimePinned).toContain(tr(5))
-  expect(e(2).refTimePinned).toContain(tr(6))
-  expect(e(2).refTimePinned.length).toBe(2)
-
-  expect(tr(4).prev).toBe(tr(3))
-  expect(tr(4).next).toBeUndefined()
-  expect(tr(4).task).toBe(t(2))
-  expect(tr(4).event).toBe(e(2))
-  expect(tr(4).activity).toBe(a(1))
-
-  expect(t(3).prev).toBeUndefined()
-  expect(t(3).next).toBe(t(4))
-  expect(t(3).refTime).toContain(tr(5))
-  expect(t(3).refTime.length).toBe(1)
-  expect(t(3).refEvents).toContain(e(2))
-  expect(t(3).refEvents.length).toBe(1)
-  expect(t(3).activity).toBe(a(1))
-
-  expect(t(4).prev).toBe(t(3))
-  expect(t(4).next).toBeUndefined()
-  expect(t(4).refTime).toContain(tr(6))
-  expect(t(4).refTime.length).toBe(1)
-  expect(t(4).refEvents).toContain(e(2))
-  expect(t(4).refEvents.length).toBe(1)
-  expect(t(4).activity).toBe(a(1))
-
-  expect(tr(5).prev).toBeUndefined()
-  expect(tr(5).next).toBe(tr(6))
-  expect(tr(5).task).toBe(t(3))
-  expect(tr(5).event).toBe(e(2))
-  expect(tr(5).activity).toBe(a(1))
-
-  expect(tr(6).prev).toBe(tr(5))
-  expect(tr(6).next).toBeUndefined()
-  expect(tr(6).task).toBe(t(4))
-  expect(tr(6).event).toBe(e(2))
-  expect(tr(6).activity).toBe(a(1))
-
+  expect(e(3).activity).toBe(a(1))
 })
+
+
+

@@ -1,5 +1,4 @@
-import { allActivities, allEvents, allTasks, allTimeRecords }
-  from "../App.test_data"
+import testData002 from "./Mocks/Mocks.test.data";
 
 const mockFetch = (url, options) => {
   const urlTasks = 'https://mima.f15.dev/api/tasks/'
@@ -8,17 +7,7 @@ const mockFetch = (url, options) => {
   const urlTimeRecords = 'https://mima.f15.dev/api/time_records/'
 
   let fetchResponse
-  const tasks = Object.keys(allTasks).map(id => allTasks[id])
-  const events = Object.keys(allEvents).map(id => allEvents[id])
-  const activities = Object.keys(allActivities).map(id => allActivities[id])
-  const timeRecords = Object.keys(allTimeRecords).map(id => allTimeRecords[id])
-
-  // // Get the max key value + 1
-  // const maxKeyIncr = dict =>
-  //   Object.keys(dict).reduce((a, b) => {
-  //     Number(b) > Number(a) ? b : a
-  //   })
-
+  const { activities, events, tasks, timeRecs } = testData002
 
   // GET
 
@@ -56,8 +45,8 @@ const mockFetch = (url, options) => {
       fetchResponse = {
         ok: true,
         json: () => Promise.resolve({
-          results: timeRecords,
-          count: timeRecords.length
+          results: timeRecs,
+          count: timeRecs.length
     })}}
   }
 
@@ -109,9 +98,6 @@ const mockFetch = (url, options) => {
   }
 
   // UPDATE
-
-  // console.log('Mock fetch() options:', options)
-  // console.log('Mock fetch() url:', url)
 
   if (options.method === 'PUT') {
     // Get the next maximum ID
