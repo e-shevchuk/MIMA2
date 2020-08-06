@@ -1,51 +1,50 @@
-import {
-  dictValidateBoolean,
-  dictValidateDuration,
-  dictValidateID,
-  dictValidateString
-} from "./service_functions";
-import moment from "moment";
+import { dictValidateBoolean, dictValidateDuration, dictValidateID, }
+  from "./service_functions";
 
-export default class TimeRec {
+import moment from "moment";
+import ScheduleElement from "./ScheduleElement";
+
+export default class TimeRec extends ScheduleElement{
 
   // CONSTRUCTORS
 
   constructor() {
+    super({'type': 'TimeRec'})
   }
 
   static fromDBJSON(json){
-    const errPref = 'TimeRec.fromDBJSON(): '
+    // Create an empty instance
+    const time = new TimeRec()
+    // Set up IDs and save DB form data
+    time.initByDBJSON(json)
 
-    // Parameters processing
-    const data = JSON.parse(json)
+    return time
+  }
+
+  static fromDB(data){
+    // Create an empty instance
+    const time = new TimeRec()
+    // Set up IDs and save DB form data
+    time.initByDB(data)
+
+    return time
+  }
+
+  initByDB_DataFields(data){
+    const msg = this.type + '.initByDB_DataFields(): '
 
     // Validations
+    dictValidateID(data, 'task', msg)
+    dictValidateID(data, 'event', msg)
+    dictValidateDuration(data, 'duration', msg)
+    dictValidateBoolean(data, 'complete', msg)
 
-    dictValidateID(data, 'id', errPref)
-    dictValidateID(data, 'task', errPref)
-    dictValidateID(data, 'event', errPref)
-    dictValidateDuration(data, 'duration', errPref)
-    dictValidateBoolean(data, 'complete', errPref)
-
-    // Create Activity object
-    const timeRec = new TimeRec()
-
-    // Mandatory parameters
-
-    // IDs
-    const id = Number(data['id'])
-    timeRec.id = id
-    timeRec.idDB = id
-    timeRec.idApp = id
-
+    // Title
+    this.title = data.title
     // Duration
-    timeRec.duration = Number(moment.duration(data.duration))
+    this.duration = Number(moment.duration(data.duration))
     // Complete
-    timeRec.complete = data.complete
-    // Initial data in DB format
-    timeRec.dataDB = data
-
-    return timeRec
+    this.complete = data.complete
   }
 
   // SETTERS & GETTERS

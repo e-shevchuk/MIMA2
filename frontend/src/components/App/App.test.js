@@ -10,7 +10,7 @@ import App from "../App";
 import mockFetch from "../Mocks";
 import { softTime, eventStartCompare } from "../App";
 
-jest.spyOn(window, 'fetch').mockImplementation(mockFetch)
+// jest.spyOn(window, 'fetch').mockImplementation(mockFetch)
 
 // Initializing app for testing
 // const app = shallow(<App/>)

@@ -41,7 +41,7 @@ test('fromDBJSON() 01', ()=>{
 })
 
 test('fromDBJSON() 02', ()=>{
-  const msg = "Task.fromDBJSON(): 'id' is not provided"
+  const msg = "Task.initByDB(): 'id' is not provided"
 
   const dataWhole = {...allTasks[288]}
   delete dataWhole.id
@@ -56,7 +56,7 @@ test('fromDBJSON() 02', ()=>{
 })
 
 test('fromDBJSON() 03', ()=>{
-  const msg = "Task.fromDBJSON(): 'title' is not provided"
+  const msg = "Task.initByDB_DataFields(): 'title' is not provided"
 
   const dataWhole = {...allTasks[288]}
   delete dataWhole.title
@@ -71,7 +71,7 @@ test('fromDBJSON() 03', ()=>{
 })
 
 test('fromDBJSON() 04', ()=>{
-  const msg = "Task.fromDBJSON(): 'title' is empty"
+  const msg = "Task.initByDB_DataFields(): 'title' is empty"
 
   const dataWhole = {...allTasks[288]}
   dataWhole.title = ''

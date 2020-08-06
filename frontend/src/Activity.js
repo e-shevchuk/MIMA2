@@ -1,51 +1,46 @@
-import {dictValidateID, dictValidateString} from "./service_functions";
+import { dictValidateString } from "./service_functions";
+import ScheduleElement from "./ScheduleElement";
 
-export default class Activity {
-
-  // CONSTRUCTORS
+export default class Activity extends ScheduleElement{
 
   constructor() {
+    super({'type': 'Activity'})
+
+    this._refEvents = new Set([])
+
+    // Binding
+
+    this.refEventsAdd = this.refEventsAdd.bind(this)
+
   }
 
   static fromDBJSON(json){
-
-    // Parameters processing
-    const data = JSON.parse(json)
-
-    // Validations
-    dictValidateID(data, 'id', 'Activity.fromDBJSON(): ')
-    dictValidateString(data, 'title', 'Activity.fromDBJSON(): ')
-
-    // Create Activity object
+    // Create an empty instance
     const activity = new Activity()
-
-    // Setting parameters up
-    activity.id = Number(data.id)
-    activity.idDB = Number(data.id)
-    activity.idApp = Number(data.id)
-    activity.title = data.title
-
-    // Initial data in DB format
-    activity.dataDB = data
+    // Set up IDs and save data passed in DB form
+    activity.initByDBJSON(json)
 
     return activity
+  }
+
+  static fromDB(data){
+    // Create an empty instance
+    const activity = new Activity()
+    // Set up IDs and save data passed in DB form
+    activity.initByDB(data)
+
+    return activity
+  }
+
+  initByDB_DataFields(data){
+    const msg = this.type + '.initByDB_DataFields(): '
+    dictValidateString(data, 'title', msg)
+    this.title = data.title
   }
 
   // SETTERS & GETTERS
 
   // Parameters
-
-  // ID
-  set id(id)                    {this._id = id}
-  get id()                      {return this._id}
-
-  // ID in App
-  set idApp(idApp)              {this._idApp = idApp}
-  get idApp()                   {return this._idApp}
-
-  // ID in DB
-  set idDB(idDB)                {this._idDB = idDB}
-  get idDB()                    {return this._idDB}
 
   // Title
   set title(title)              {this._title = title}
@@ -54,11 +49,7 @@ export default class Activity {
   // External references
 
   // Events
-  get events()                  {return this._events}
+  get refEvents()               {return [...this._refEvents]}
+  refEventsAdd(t)               {this._refEvents.add(t)}
 
-  // Additional Stuff
-
-  // Data in backend DB form
-  set dataDB(dataDB)      {this._dataDB = dataDB}
-  get dataDB()            {return {...this._dataDB}}
 }

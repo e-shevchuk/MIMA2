@@ -36,7 +36,7 @@ test('fromDBJSON() 01', ()=>{
 })
 
 test('fromDBJSON() 02', ()=>{
-  const msg = "TimeRec.fromDBJSON(): 'id' is not provided"
+  const msg = "TimeRec.initByDB(): 'id' is not provided"
 
   const dataWhole = {...allTimeRecords[1]}
   delete dataWhole.id
@@ -51,7 +51,7 @@ test('fromDBJSON() 02', ()=>{
 })
 
 test('fromDBJSON() 03', ()=>{
-  const msg = "TimeRec.fromDBJSON(): 'duration' is not provided"
+  const msg = "TimeRec.initByDB_DataFields(): 'duration' is not provided"
 
   const dataWhole = {...allTimeRecords[1]}
   delete dataWhole.duration

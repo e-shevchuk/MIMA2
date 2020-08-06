@@ -2,71 +2,68 @@ import {dictValidateID, dictValidateString,
         dictValidateDate, dictValidateDuration, dateStrUTCtoUnix}
         from "./service_functions"
 import moment from "moment";
+import ScheduleElement from "./ScheduleElement";
 
-export default class Event {
 
-  // CONSTRUCTORS
+export default class Event extends ScheduleElement{
 
   constructor() {
+    super({'type': 'Event'})
+
+    // Related objects references
+
+    this._refTasks = new Set([])
+    this._refTasksPinned = new Set([])
+    this._refTime = new Set([])
+    this._refTimePinned = new Set([])
+
     // Binding
 
-    this.addTask = this.addTask.bind(this)
-    this.addTime = this.addTime.bind(this)
-    this.addTaskPinned = this.addTaskPinned.bind(this)
-    this.addTimePinned = this.addTimePinned.bind(this)
+    this.refTasksAdd = this.refTasksAdd.bind(this)
+    this.refTimeAdd = this.refTimeAdd.bind(this)
+    this.refTasksPinnedAdd = this.refTasksPinnedAdd.bind(this)
+    this.refTimePinnedAdd = this.refTimePinnedAdd.bind(this)
   }
 
   static fromDBJSON(json){
-    const errPref = 'Event.fromDBJSON(): '
-
-    // Parameters processing
-    const data = JSON.parse(json)
-
-    // Validations
-
-    dictValidateID(data, 'id', errPref)
-    dictValidateString(data, 'title', errPref)
-    dictValidateID(data, 'activity_id', errPref)
-    dictValidateDate(data, 'start', errPref)
-    dictValidateDuration(data, 'duration', errPref)
-
-    // Create Activity object
+    // Create an empty instance
     const event = new Event()
-
-    // Mandatory parameters
-
-    // IDs
-    event.id = Number(data['id'])
-    event.idDB = Number(data['id'])
-    event.idApp = Number(data['id'])
-    // Title
-    event.title = data.title
-    // Start
-    event.start = dateStrUTCtoUnix(data.start)
-    // Duration
-    event.duration = Number(moment.duration(data.duration))
-
-    // Initial data in DB format
-    event.dataDB = data
+    // Set up IDs and save DB form data
+    event.initByDBJSON(json)
 
     return event
   }
 
+  static fromDB(data){
+    // Create an empty instance
+    const event = new Event()
+    // Set up IDs and save DB form data
+    event.initByDB(data)
+
+    return event
+  }
+
+  initByDB_DataFields(data){
+    const msg = this.type + '.initByDB_DataFields(): '
+
+    // Validations
+    dictValidateString(data, 'title', msg)
+    dictValidateID(data, 'activity_id', msg)
+    dictValidateDate(data, 'start', msg)
+    dictValidateDuration(data, 'duration', msg)
+
+    // Title
+    this.title = data.title
+    // Start
+    this.start = dateStrUTCtoUnix(data.start)
+    // Duration
+    this.duration = Number(moment.duration(data.duration))
+  }
+
+
   // SETTERS & GETTERS
 
   // Parameters
-
-  // ID
-  set id(id)                    {this._id = id}
-  get id()                      {return this._id}
-
-  // ID in App
-  set idApp(idApp)              {this._idApp = idApp}
-  get idApp()                   {return this._idApp}
-
-  // ID in DB
-  set idDB(idDB)                {this._idDB = idDB}
-  get idDB()                    {return this._idDB}
 
   // Title
   set title(title)              {this._title = title}
@@ -87,20 +84,20 @@ export default class Event {
   get activity()                {return this._activity}
 
   // Tasks
-  get tasks()                   {return [...this._tasks]}
-  addTask(t)                    {this._tasks.add(t)}
+  get refTasks()                {return [...this._refTasks]}
+  refTasksAdd(t)                {this._refTasks.add(t)}
 
   // Time records
-  get time()                   {return [...this._time]}
-  addTime(t)                   {this._time.add(t)}
+  get refTime()                 {return [...this._refTime]}
+  refTimeAdd(t)                 {this._refTime.add(t)}
 
   // Tasks pinned
-  get tasksPinned()            {return [...this._tasksPinned]}
-  addTaskPinned(t)             {this._tasksPinned.add(t)}
+  get refTasksPinned()          {return [...this._refTasksPinned]}
+  refTasksPinnedAdd(t)          {this._refTasksPinned.add(t)}
 
   // Time records pinned
-  get timePinned()              {return [...this._timePinned]}
-  addTimePinned(t)              {this._timePinned.add(t)}
+  get refTimePinned()           {return [...this._refTimePinned]}
+  refTimePinnedAdd(t)           {this._refTimePinned.add(t)}
 
   // Event next
   set next(next)                {this._next = next}

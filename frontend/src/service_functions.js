@@ -62,10 +62,10 @@ export function wrongSinceEmptyStr(s) {
 export function dictValidateString(data, key, msg){
 
     if (!data)
-        throw new error('dictValidateNumber(data, key, msg): no data provided')
+        throw new Error('dictValidate...(data, key, msg): no data provided')
 
     if (!key)
-        throw new error('dictValidateNumber(data, key, msg): no key provided')
+        throw new Error('dictValidate...(data, key, msg): no key provided')
 
   // If message isn't provided - make in empty
   msg = msg || ''
@@ -139,10 +139,10 @@ export function dictValidateDuration(data, key, msg){
 export function dictValidateBoolean(data, key, msg){
 
     if (!data)
-        throw new error('dictValidateNumber(data, key, msg): no data provided')
+        throw new error('dictValidateBoolean(data, key, msg): no data provided')
 
     if (!key)
-        throw new error('dictValidateNumber(data, key, msg): no key provided')
+        throw new error('dictValidateBoolean(data, key, msg): no key provided')
 
   // If message isn't provided - make in empty
   msg = msg || ''
@@ -155,6 +155,29 @@ export function dictValidateBoolean(data, key, msg){
     throw new Error(msg + "'" + key + "' wrong type")
 }
 
+export function dictValidateKeys(data, keys, msg){
+
+    if (!data)
+        throw new error('dictValidateKeys(data, keys, msg): no data provided')
+
+    if (!keys || keys.length === 0)
+        throw new error('dictValidateKeys(data, keys, msg): no keys provided')
+
+  // If message isn't provided - make it empty
+  msg = msg || ''
+
+  // Add all missing keys to the list
+  let keysMissing = []
+  keys.map(k => {
+    if(!(k in data))
+      keysMissing.push(k)
+  })
+
+  if (keysMissing.length > 0)
+    throw new Error(msg + "missing keys: " + keysMissing.join(', '))
+
+}
+
 export function dateStrUTCtoUnix (dateStr){
   const errPref = 'dateStrUTCtoUnix(): '
 
@@ -163,6 +186,14 @@ export function dateStrUTCtoUnix (dateStr){
 
   return Number(moment(dateStr, "YYYY-MM-DDTHH:mm:ssZ")
     .format("x"))
+}
+
+export function jsonValidate(str, msg) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+      throw new Error(msg + "Wrong JSON format: " + str)
+    }
 }
 
 export default getCookie;

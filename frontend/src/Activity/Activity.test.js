@@ -15,7 +15,7 @@ test('fromDBJSON() 01', ()=>{
 
 test('fromDBJSON() 02', ()=>{
   const json = '{"title": "MIMA Dev"}'
-  const msg = "Activity.fromDBJSON(): 'id' is not provided"
+  const msg = "Activity.initByDB(): 'id' is not provided"
 
   try {
     const activity = Activity.fromDBJSON(json)
@@ -26,7 +26,7 @@ test('fromDBJSON() 02', ()=>{
 
 test('fromDBJSON() 03', ()=>{
   const json = '{"id": 96}'
-  const msg = "Activity.fromDBJSON(): 'title' is not provided"
+  const msg = "Activity.initByDB_DataFields(): 'title' is not provided"
 
   try {
     const activity = Activity.fromDBJSON(json)

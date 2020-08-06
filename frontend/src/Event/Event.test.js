@@ -2,12 +2,12 @@ import Event from "../Event";
 import { allEvents } from "../App.test_data";
 import moment from "moment";
 
-test('Constructor', ()=>{
+test('Event.Constructor', ()=>{
   const event = new Event()
   expect(event).toBeInstanceOf(Event)
 })
 
-test('fromDBJSON() 01', ()=>{
+test('Event.fromDBJSON() 01', ()=>{
   let dataWhole = {...allEvents[108]}
   const json = JSON.stringify(dataWhole)
   const event = Event.fromDBJSON(json)
@@ -26,9 +26,9 @@ test('fromDBJSON() 01', ()=>{
   expect(event.dataDB.id).toBe(108)
 })
 
-test('fromDBJSON() 02', ()=>{
+test('Event.fromDBJSON() 02', ()=>{
   const json = '{"title": "MIMA Dev"}'
-  const msg = "Event.fromDBJSON(): 'id' is not provided"
+  const msg = "Event.initByDB(): 'id' is not provided"
 
   try {
     const event = Event.fromDBJSON(json)
@@ -37,9 +37,9 @@ test('fromDBJSON() 02', ()=>{
   }
 })
 
-test('fromDBJSON() 03', ()=>{
+test('Event.fromDBJSON() 03', ()=>{
   const json = '{"id": 96}'
-  const msg = "Event.fromDBJSON(): 'title' is not provided"
+  const msg = "Event.initByDB_DataFields(): 'title' is not provided"
 
   try {
     const event = Event.fromDBJSON(json)
@@ -48,9 +48,9 @@ test('fromDBJSON() 03', ()=>{
   }
 })
 
-test('fromDBJSON() 04', ()=>{
+test('Event.fromDBJSON() 04', ()=>{
   const json = '{"title": "MIMA Dev", "id": ""}'
-  const msg = "Event.fromDBJSON(): 'id' is not correct"
+  const msg = "Event.initByDB(): 'id' is not correct"
 
   try {
     const event = Event.fromDBJSON(json)

@@ -17,7 +17,9 @@ export const allEvents = {
     "title": "WorldTime cafe",
     "feasibility": 1,
     "start": "2020-07-01T05:00:00Z",
-    "duration": "11:00:00"
+    "duration": "11:00:00",
+    "prev": null,
+    "next": 2,
   },
   "2": {
     "id": 2,
@@ -26,7 +28,9 @@ export const allEvents = {
     "title": "WorldTime cafe",
     "feasibility": 1,
     "start": "2020-07-01T06:00:00Z",
-    "duration": "11:00:00"
+    "duration": "11:00:00",
+    "prev": 1,
+    "next": 3,
   },
   "3": {
     "id": 3,
@@ -35,7 +39,9 @@ export const allEvents = {
     "title": "WorldTime cafe",
     "feasibility": 1,
     "start": "2020-07-02T14:00:00Z",
-    "duration": "03:00:00"
+    "duration": "03:00:00",
+    "prev": 2,
+    "next": null,
   },
   // --------------------------------- unused ----------------------------------
 
@@ -215,14 +221,14 @@ export const allTasks = {
     "id": 3,
     "title": "3 Redirect unlogged users to Google Auth",
     "duration": "00:10:00",
-    "pinned": false,
+    "pinned": true,
     "complete": false,
   },
   "4": {
     "id": 4,
     "title": "4 Redirect unlogged users to Google Auth",
     "duration": "01:40:00",
-    "pinned": false,
+    "pinned": true,
     "complete": false,
   },
   // --------------------------------- unused ----------------------------------
@@ -236,11 +242,11 @@ export const allActivities = {
 export const allTimeRecords = {
   1: {"id":1, "task":288, "event":109, "duration":"00:10:00", "complete":false},
 
-  2: {"id":2, "task":1, "event": 1, "prev": null, "next": 3, "duration":"00:30:00", "complete":false},
-  3: {"id":3, "task":2, "event": 1, "prev": 2, "next": 4, "duration":"00:20:00", "complete":false},
-  4: {"id":4, "task":2, "event": 2, "prev": 3, "next": 5, "duration":"00:20:00", "complete":false},
-  5: {"id":5, "task":3, "event": 2, "prev": 4, "next": 6, "duration":"00:10:00", "complete":false},
-  6: {"id":6, "task":4, "event": 2, "prev": 5, "next": null, "duration":"01:40:00", "complete":false},
+  2: {"id":2, "task":1, "event": 1, "prev": null, "next": 3,    "duration":"00:30:00", "complete":false},
+  3: {"id":3, "task":2, "event": 1, "prev": 2,    "next": 4,    "duration":"00:20:00", "complete":false},
+  4: {"id":4, "task":2, "event": 2, "prev": 3,    "next": null, "duration":"00:20:00", "complete":false},
+  5: {"id":5, "task":3, "event": 2, "prev": null, "next": 6,    "duration":"00:10:00", "complete":false},
+  6: {"id":6, "task":4, "event": 2, "prev": 5,    "next": null, "duration":"01:40:00", "complete":false},
   // --------------------------------- unused ----------------------------------
 
 }

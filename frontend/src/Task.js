@@ -1,58 +1,63 @@
-import {dictValidateID, dictValidateString, dictValidateDuration,
-        dictValidateBoolean, dateStrUTCtoUnix} from "./service_functions";
+import {
+  dictValidateID, dictValidateString, dictValidateDuration,
+  dictValidateBoolean, dateStrUTCtoUnix, dictValidateDate
+} from "./service_functions";
 import moment from "moment";
+import ScheduleElement from "./ScheduleElement";
 
-export default class Task {
+export default class Task extends ScheduleElement{
 
   // CONSTRUCTORS
 
   constructor() {
+    super({'type': 'Task'})
+
+    // Linked objects Sets
+    this._refEvents = new Set()
+    this._refTime = new Set()
+
     // Binding
-    this.addEvent = this.addEvent.bind(this)
-    this.addTime = this.addTime.bind(this)
+    this.refEventsAdd = this.refEventsAdd.bind(this)
+    this.refTimeAdd = this.refTimeAdd.bind(this)
   }
 
-  static fromDBJSON(json, events){
-    const errPref = 'Task.fromDBJSON(): '
-
-    // Parameters processing
-    const data = JSON.parse(json)
-
-    // Validations
-
-    dictValidateID(data, 'id', errPref)
-    dictValidateString(data, 'title', errPref)
-    dictValidateDuration(data, 'duration', errPref)
-    dictValidateBoolean(data, 'complete', errPref)
-    dictValidateBoolean(data, 'pinned', errPref)
-
-    // Create Activity object
+  static fromDBJSON(json){
+    // Create an empty instance
     const task = new Task()
-
-    // Mandatory parameters
-
-    // IDs
-    task.id = Number(data['id'])
-    task.idDB = Number(data['id'])
-    task.idApp = Number(data['id'])
-    // Title
-    task.title = data.title
-    // Duration
-    task.duration = Number(moment.duration(data.duration))
-    // Complete
-    task.complete = data.complete
-    // Pinned
-    task.pinned = data.pinned
-
-    // Initial data in DB format
-    task.dataDB = data
-
-    // Linked objects list
-    task._events = new Set()
-    task._time = new Set()
+    // Set up IDs and save DB form data
+    task.initByDBJSON(json)
 
     return task
   }
+
+  static fromDB(data){
+    // Create an empty instance
+    const task = new Task()
+    // Set up IDs and save DB form data
+    task.initByDB(data)
+
+    return task
+  }
+
+  initByDB_DataFields(data){
+    const msg = this.type + '.initByDB_DataFields(): '
+
+    // Validations
+    dictValidateString(data, 'title', msg)
+    dictValidateDuration(data, 'duration', msg)
+    dictValidateBoolean(data, 'complete', msg)
+    dictValidateBoolean(data, 'pinned', msg)
+
+    // Title
+    this.title = data.title
+    // Duration
+    this.duration = Number(moment.duration(data.duration))
+    // Complete
+    this.complete = data.complete
+    // Pinned
+    this.pinned = data.pinned
+  }
+
 
   static fromApp(){
     return new Task()
@@ -61,18 +66,6 @@ export default class Task {
   // SETTERS & GETTERS
 
   // Parameters
-
-  // ID
-  set id(id)              {this._id = id}
-  get id()                {return this._id}
-
-  // ID in App
-  set idApp(idApp)        {this._idApp = idApp}
-  get idApp()             {return this._idApp}
-
-  // ID in DB
-  set idDB(idDB)          {this._idDB = idDB}
-  get idDB()              {return this._idDB}
 
   // Title
   set title(title)        {this._title = title}
@@ -97,8 +90,8 @@ export default class Task {
   get activity()          {return this._activity}
 
   // events
-  get events()            {return [...this._events]}
-  addEvent(e)             {this._events.add(e)}
+  get refEvents()          {return [...this._refEvents]}
+  refEventsAdd(e)          {this._refEvents.add(e)}
 
   // Task next
   set next(next)          {this._next = next}
@@ -109,8 +102,8 @@ export default class Task {
   get prev()              {return this._prev}
 
   // Time records
-  get time()            {return [...this._time]}
-  addTime(t)             {this._time.add(t)}
+  get refTime()           {return [...this._refTime]}
+  refTimeAdd(t)           {this._refTime.add(t)}
 
   // Additional Stuff
 

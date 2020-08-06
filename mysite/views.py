@@ -2,9 +2,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import dateparse
-from mysite.models import Activity, Event, Task, Project, GoogleCreds
+from mysite.models import Activity, Event, Task, Project, GoogleCreds, Settings
 from django.views.generic.base import RedirectView
-from .tasks_operation import tasks_to_events_sync
 from django.contrib.auth import authenticate, login
 import django
 
@@ -20,8 +19,18 @@ def index(request):
     # GOOGLE ACCESS CREDENTIALS
 
     # If user isn't authentificated - get out
-    if not request.user.is_authenticated:
+    user = request.user
+    if not user.is_authenticated:
         return HttpResponseRedirect("/accounts/login")
+
+    # If this isn't google user
+    settings = Settings.get_or_create(user)
+    if not settings.google:
+        context = {'activities': list(Activity.objects.filter(user_id=user)),
+                   'projects': list(Project.objects.all())}
+
+        return render(request, 'index.html', context=context)
+
 
     # Initialize google creds for this user
     googlecreds = GoogleCreds.get_or_create(user=request.user)
@@ -96,8 +105,6 @@ def index(request):
                 ie.start = start
                 ie.duration = duration
                 ie.save()
-
-    tasks_to_events_sync(request.user)
 
     # FRONT-END OBJECTS TO DISPLAY
 
