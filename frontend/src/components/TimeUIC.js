@@ -27,7 +27,7 @@ function TaskTitleFldUIC (props){
     <ContentEditable
       tagname='Title'
       style={{cursor: "text",}}
-      html={"I am the task title"}
+      html={props.title}
     />
   )
 }
@@ -81,7 +81,7 @@ export function TimeUIC(props){
         <div className="media-body pb-1 mb-0 small border-bottom border-gray">
           <div className="d-flex mr-2 bd-highlight">
 
-            <TaskTitleFldUIC/>
+            <TaskTitleFldUIC title={props.time.title}/>
             <TaskDurationFldUIC/>
             <TaskControlsUIC/>
 
@@ -105,7 +105,7 @@ export function TimeDraggableUIC(props) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
         >
-          <TimeUIC />
+          <TimeUIC time={props.time}/>
         </div>
       )}
 
@@ -120,6 +120,7 @@ export default function TimeListUIC(props) {
   const timeDraggables = props.timeRecs.map((ti, i) =>
     <TimeDraggableUIC key={ti.id} time={ti} index={i}/>
   )
+
   return (
     <Droppable droppableId={String(props.eventId)}>
       {(provided, snapshot) => (

@@ -1,6 +1,7 @@
 import Event from "../Event";
 import { allEvents } from "../App.test_data";
 import moment from "moment";
+import {DAYTIMEFORMAT} from "../service_functions";
 
 test('Event.Constructor', ()=>{
   const event = new Event()
@@ -16,11 +17,8 @@ test('Event.fromDBJSON() 01', ()=>{
   //Title
   expect(event.title).toBe('MIMA Dev')
   // Start
-  const dateMomUTC = moment(event.start, 'x').utc()
-  const rg = RegExp('\\+00:00')
-  const dateMomUTCStr = dateMomUTC.format("YYYY-MM-DDTHH:mm:ssZ")
-  const dateMomUTCStrZ = dateMomUTCStr.replace(rg, 'Z')
-  expect(dateMomUTCStrZ).toBe(JSON.parse(json).start)
+  const dateMomUTC = moment(event.start, 'x')
+  expect(dateMomUTC.format(DAYTIMEFORMAT)).toBe(dataWhole.start)
   // Duration
   expect(event.duration).toBe(39600000)
   expect(event.dataDB.id).toBe(108)
@@ -28,7 +26,7 @@ test('Event.fromDBJSON() 01', ()=>{
 
 test('Event.fromDBJSON() 02', ()=>{
   const json = '{"title": "MIMA Dev"}'
-  const msg = "Event.initByDB(): 'id' is not provided"
+  const msg = "Event.initByDB(): 'id' is not exists"
 
   try {
     const event = Event.fromDBJSON(json)

@@ -3,79 +3,11 @@ import './App.css';
 import {DragDropContext} from "react-beautiful-dnd";
 import ProjectListUIC from "./ProjectsUIC";
 import EventListUIC from "./EventsUIC";
+import MIMApi from "../MIMApi";
+import ScheduleManager from "../ScheduleManager";
+import moment from "moment";
 
-const allEvents = [
-      {
-        "id": 101,
-        "activityId": 301,
-        "title": "WorldTime cafe",
-        "feasibility": 1,
-        "start": 1593579600000,
-        "duration": "11:00:00",
-        "time": [
-          {
-            "id": 402,
-            "duration": 1800000,
-            "title": "Listen",
-            "pinned": false,
-            "timeComplete": false,
-            "taskComplete": false,
-          },
-          {
-            "id": 403,
-            "duration": 1200000,
-            "title": "Drink a cup a cappuccino",
-            "pinned": false,
-            "timeComplete": false,
-            "taskComplete": false,
-          },
-        ],
-      },
-      {
-        "id": 102,
-        "activity_id": 301,
-        "title": "WorldTime cafe",
-        "feasibility": 1,
-        "start": 1593583200000,
-        "duration": "11:00:00",
-        "time": [
-          {
-            "id": 404,
-            "duration": 1200000,
-            "title": "Drink a cup a cappuccino",
-            "pinned": false,
-            "timeComplete": false,
-            "taskComplete": false,
-          },
-          {
-            "id": 405,
-            "duration": 600000,
-            "title": "Make a todo list",
-            "pinned": true,
-            "timeComplete": false,
-            "taskComplete": false,
-          },
-          {
-            "id": 406,
-            "duration": 1800000,
-            "title": "Produce genius idea",
-            "pinned": true,
-            "timeComplete": false,
-            "taskComplete": false,
-          },
-        ],
-      },
-      {
-        "id": 103,
-        "activity_id": 301,
-        "title": "WorldTime cafe",
-        "feasibility": 1,
-        "start": 1593698400000,
-        "duration": "03:00:00",
-        "time": [],
-      },
-    ]
-
+window.moment = moment
 
 class App extends Component {
   constructor(props) {
@@ -86,14 +18,21 @@ class App extends Component {
       events: [],
     }
 
+    // API, Schedule Manager
+    this.api = new MIMApi(this)
+    this.scheduleManager = new ScheduleManager(this, this.api)
+
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   componentDidMount() {
-    this.setState({events: allEvents})
+    this.scheduleManager.init()
   }
 
   render() {
+
+    window.api = this.api
+    window.sm = this.scheduleManager
 
     if(this.state.events.length === 0) return(<div>Loading...</div>)
 

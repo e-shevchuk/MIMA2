@@ -1,6 +1,12 @@
-import {dictValidateID, dictValidateString,
-        dictValidateDate, dictValidateDuration, dateStrUTCtoUnix}
-        from "./service_functions"
+import {
+  dictValidateID,
+  dictValidateString,
+  dictValidateDate,
+  dictValidateDuration,
+  dateStrUTCtoUnix,
+  sortPrevNextListForEvent
+}
+  from "./service_functions"
 import moment from "moment";
 import ScheduleElement from "./ScheduleElement";
 
@@ -16,6 +22,10 @@ export default class Event extends ScheduleElement{
     this._refTasksPinned = new Set([])
     this._refTime = new Set([])
     this._refTimePinned = new Set([])
+
+    // Other
+    this.timeRecsSorted = false
+    this.timeRecsPSorted = false
 
     // Binding
 
@@ -48,7 +58,7 @@ export default class Event extends ScheduleElement{
 
     // Validations
     dictValidateString(data, 'title', msg)
-    dictValidateID(data, 'activity_id', msg)
+    dictValidateID(data, 'activity', msg)
     dictValidateDate(data, 'start', msg)
     dictValidateDuration(data, 'duration', msg)
 
@@ -88,7 +98,18 @@ export default class Event extends ScheduleElement{
   refTasksAdd(t)                {this._refTasks.add(t)}
 
   // Time records
-  get refTime()                 {return [...this._refTime]}
+
+  get refTime() {
+    // If time records aren't sorted
+    if(!this.timeRecsSorted) {
+      // Sort time records list and change it's status
+      const timeSorted = sortPrevNextListForEvent([...this._refTime])
+      this._refTime = new Set(timeSorted)
+      this.timeRecsSorted = true}
+
+    return [...this._refTime]
+  }
+
   refTimeAdd(t)                 {this._refTime.add(t)}
 
   // Tasks pinned
@@ -96,7 +117,17 @@ export default class Event extends ScheduleElement{
   refTasksPinnedAdd(t)          {this._refTasksPinned.add(t)}
 
   // Time records pinned
-  get refTimePinned()           {return [...this._refTimePinned]}
+  get refTimePinned() {
+    // If time records aren't sorted
+    if(!this.timeRecsPSorted) {
+      // Sort time records list and change it's status
+      const timePSorted = sortPrevNextListForEvent([...this._refTimePinned])
+      this._refTimePinned = new Set(timePSorted)
+      this.timeRecsPSorted = true}
+
+    return [...this._refTimePinned]
+  }
+
   refTimePinnedAdd(t)           {this._refTimePinned.add(t)}
 
   // Event next

@@ -145,7 +145,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10000
+    'PAGE_SIZE': 10000,
+    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S',
 }
 
 GOOGLE_AUTH_CREDS = {

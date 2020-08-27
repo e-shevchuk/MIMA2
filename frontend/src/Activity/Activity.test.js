@@ -15,7 +15,7 @@ test('fromDBJSON() 01', ()=>{
 
 test('fromDBJSON() 02', ()=>{
   const json = '{"title": "MIMA Dev"}'
-  const msg = "Activity.initByDB(): 'id' is not provided"
+  const msg = "Activity.initByDB(): 'id' is not exists"
 
   try {
     const activity = Activity.fromDBJSON(json)

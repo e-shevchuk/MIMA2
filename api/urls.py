@@ -10,6 +10,7 @@ api_router.register(r'tasks', views.TaskViewSet)
 api_router.register(r'time_records', views.TimeViewSet)
 api_router.register(r'events', views.EventViewSet)
 api_router.register(r'activities', views.ActivityViewSet)
+api_router.register(r'settings', views.SettingsViewSet)
 
 
 urlpatterns = [

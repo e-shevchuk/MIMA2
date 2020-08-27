@@ -6,6 +6,7 @@ import Event from "../Event";
 import Activity from "../Activity";
 import { allActivities, allTimeRecords, allEvents, allTasks }
         from './Schedule.test.data'
+import testData001 from "../ScheduleManager/ScheduleManager.test.data";
 
 
 // SCHEDULE ELEMENTS SET (ScheduleElementsSet)
@@ -26,7 +27,7 @@ test('ScheduleElementsSet.add() 01', ()=>{
 })
 
 test('ScheduleElementsSet.add() 02', ()=>{
-  const msg = "ScheduleElementsSet.add(): 'idDB' is not provided"
+  const msg = "ScheduleElementsSet.add(): 'idDB' is not exists"
   const elMock = {id: 1, idDB: 2, idApp: 3}
   delete elMock.idDB
   const elements = new ScheduleElementsSet()
@@ -224,16 +225,6 @@ test('Schedule.addActivity() 02', ()=>{
 })
 
 
-// Schedule.buildRefsTime tests to create
-// Time - simple refs
-// Event - simple refs
-// Time - simple refs
-// Event - tasks list
-// Event - pinned tasks list
-// Event - time list
-// Event - pinned time list
-// Task - time list
-
 test('Schedule.buildRefsTime() 01', ()=>{
   const msg = "Schedule.addActivity(): "
   let json, acty, event, task, time
@@ -419,7 +410,7 @@ test('Schedule.buildRefsTime() 0214', ()=>{
 
 })
 
-test('Schedule.buildRefsTime() 0214', ()=>{
+test('Schedule.buildRefsTime() 0315', ()=>{
   const msg = "Schedule.addActivity(): "
   let json, acty, event, task, time
   const schedule = new Schedule()
@@ -492,5 +483,74 @@ test('Schedule.buildRefsTime() 0214', ()=>{
   expect(e(3).activity).toBe(a(1))
 })
 
+test('Schedule.refTimePinned 0116', ()=>{
+  const msg = "Schedule.addActivity(): "
+  let json, acty, event, task, time
 
+  let {activities, events, tasks, timeRecs} = testData001
 
+  const s = new Schedule()
+
+  // HELPER FUNCTIONS
+
+  // Data pulling functions
+  const getA = id => new Activity.fromDBJSON(JSON.stringify(activities[id]))
+  const getE = id => new Event.fromDBJSON(JSON.stringify(events[id]))
+  const getT = id => new Task.fromDBJSON(JSON.stringify(tasks[id]))
+  const getR = id => new TimeRec.fromDBJSON(JSON.stringify(timeRecs[id]))
+
+  // Build for first time record
+  const buildRefsT = id => schedule.buildRefsTime(schedule.timeRecs.get(id))
+  const buildRefsE = id => schedule.buildRefsEvent(schedule.events.get(id))
+
+  // Object getters
+  const tr = id => s.timeRecs.get(id)
+  const t = id =>  s.tasks.get(id)
+  const e = id =>  s.events.get(id)
+  const a = id =>  s.activities.get(id)
+
+  // CREATE UN-BUILT SCHEDULE
+
+  // Activities
+  s.addActivity(getA(301))
+  s.addActivity(getA(302))
+
+  // Events
+  s.addEvent(getE(101))
+  s.addEvent(getE(102))
+  s.addEvent(getE(103))
+
+  //Tasks
+  s.addTask(getT(201))
+  s.addTask(getT(202))
+  s.addTask(getT(203))
+  s.addTask(getT(204))
+
+  // Time records
+  s.addTimeRec(getR(402))
+  s.addTimeRec(getR(403))
+  s.addTimeRec(getR(404))
+  s.addTimeRec(getR(405))
+  s.addTimeRec(getR(406))
+
+  // TESTING
+
+  // Build
+  s.buildAllRefs()
+
+  // Validations
+
+  // Pinned time references
+  expect(e(101).refTime.length).toBe(2)
+  expect(e(102).refTime.length).toBe(1)
+  expect(e(103).refTime.length).toBe(0)
+
+  // Non-pinned time references
+  expect(e(101).refTimePinned.length).toBe(0)
+  expect(e(102).refTimePinned.length).toBe(2)
+  expect(e(103).refTimePinned.length).toBe(0)
+
+  // Pinned time references
+  expect(e(101).refTime.length).toBe(2)
+
+})

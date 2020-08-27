@@ -14,10 +14,10 @@ from django.contrib.auth.decorators import login_required
 
 # Django REST framework my stuff
 from .serializers import TaskSerializer, EventSerializer, ActivitySerializer, \
-    TimeSerializer
+    TimeSerializer, SettingsSerializer
 
 # My classes
-from mysite.models import Activity, Event, Task, Project, Time
+from mysite.models import Activity, Event, Task, Project, Time, Settings
 
 
 def this_user_only(get_queryset):
@@ -110,6 +110,23 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
+
+    @this_user_only
+    def get_queryset(self):
+        return self.queryset
+
+    # TODO: Add permission classes (later on)
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user_id=self.request.user)
+
+class SettingsViewSet(viewsets.ModelViewSet):
+    """
+    The view set to provide CRUD operation on Task
+    """
+
+    queryset = Settings.objects.all()
+    serializer_class = SettingsSerializer
 
     @this_user_only
     def get_queryset(self):

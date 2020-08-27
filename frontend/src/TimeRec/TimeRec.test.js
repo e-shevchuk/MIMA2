@@ -36,7 +36,7 @@ test('fromDBJSON() 01', ()=>{
 })
 
 test('fromDBJSON() 02', ()=>{
-  const msg = "TimeRec.initByDB(): 'id' is not provided"
+  const msg = "TimeRec.initByDB(): 'id' is not exists"
 
   const dataWhole = {...allTimeRecords[1]}
   delete dataWhole.id

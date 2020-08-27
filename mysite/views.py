@@ -13,7 +13,6 @@ from .gcal import *
 
 def index(request):
 
-
     # SYNCHRONIZING WITH GOOGLE CALENDAR
 
     # GOOGLE ACCESS CREDENTIALS
@@ -23,9 +22,10 @@ def index(request):
     if not user.is_authenticated:
         return HttpResponseRedirect("/accounts/login")
 
+    # Refresh user settings
+    Settings.refresh(user)
     # If this isn't google user
-    settings = Settings.get_or_create(user)
-    if not settings.google:
+    if Settings(user, 'google') != 'Y':
         context = {'activities': list(Activity.objects.filter(user_id=user)),
                    'projects': list(Project.objects.all())}
 

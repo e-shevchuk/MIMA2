@@ -17,6 +17,10 @@ GAUTH_REDIRECT_URI = 'https://mima.f15.dev/gcauth'
 FLOW_CRED_JSON = json.loads(
     '{"web":{"client_id":"399766475307-5o7r5dbnk4f9oalicl2m51ucpr41ntq0.apps.googleusercontent.com","project_id":"utility-melody-235110","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"4IxQD0oMYyRViQDpYS6N74zo","redirect_uris":["https://mima.f15.dev/gcauth"]}}')
 
+# MODEL EXCEPTIONS
+class SettingsCodeDoesNotExists(Exception):
+    pass
+
 
 class Settings(models.Model):
     """
@@ -24,21 +28,47 @@ class Settings(models.Model):
     """
 
     # One user can have only one set of creds and vise-versa
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        primary_key=True
-    )
-    google = models.BooleanField(default=True, blank=True, null=True)
+    user = models.ForeignKey('auth.User', related_name='settings',
+                             on_delete=models.CASCADE)
+
+    code = models.CharField(max_length=200, default='')
+    title = models.CharField(max_length=200, default='')
+    value = models.CharField(max_length=200, default='')
+
+    def __str__(self):
+        return '[User ID:' + str(self.user.id) + '] ' + self.code + ' = '\
+               + self.value
+
 
     @classmethod
-    def get_or_create(cls, user):
-        try:
-            settings = user.settings
-        except:
-            settings = Settings.create(user=user)
+    def get_or_create(cls, user, code, title, value):
+        s = user.settings.filter(code=code)
+        if len(s) == 0:
+            s = Settings(user=user, code=code, title=title, value=value)
+            s.save()
+            return s
+        else:
+            return s[0]
 
-        return settings
+    @classmethod
+    def get(cls, user, code):
+        s = user.settings.filter(code=code)
+        if len(s) > 0:
+            return s[0].value
+        else:
+            msg = 'user id: ' + str(user.id) +', wrong code: '+ code
+            raise SettingsCodeDoesNotExists(msg)
+
+    @classmethod
+    def set(cls, user, code, value):
+        s = user.settings.filter(code=code)
+        if len(s) > 0:
+            s[0].value = value
+            s[0].save()
+        else:
+            msg = 'user id: ' + str(user.id) +', wrong code: '+ code
+            raise SettingsCodeDoesNotExists(msg)
+
 
     @classmethod
     def create(cls, user):
@@ -60,6 +90,11 @@ class Settings(models.Model):
             settings.save()
 
             return settings
+
+    @classmethod
+    def refresh(cls, user):
+        Settings.get_or_create(user=user, code='google', value='Y',
+                               title='Google Calendar sync')
 
 
 class Activity(models.Model):

@@ -1,6 +1,7 @@
 from django.test import TestCase, tag
 from django.contrib.auth.models import User
-from mysite.models import Activity, Event, Task, Project, GoogleCreds, Time
+from mysite.models import Activity, Event, Task, Project, GoogleCreds, Time, \
+    Settings, SettingsCodeDoesNotExists
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, make_naive
 
@@ -23,7 +24,8 @@ class BaseModelTestCase(TestCase):
         # Create some variable
         self.a = 10
 
-        u = User.objects.get(id=8)
+        User(username='evgeniy').save()
+        u = User.objects.get(username='evgeniy')
         Activity.objects.filter(user=u).delete()
         Event.objects.filter(user=u).delete()
         Task.objects.filter(user=u).delete()
@@ -99,9 +101,43 @@ class BaseModelTestCase(TestCase):
         tr4.save()
         tr5.save()
 
-    def JusOneTestCase_01(self):
+    def test_JusOneTestCase_01(self):
 
         self.assertEqual(self.a, 10)
+
+class SettingsModelTestCase(TestCase):
+
+    def setUp(self):
+
+        User(username='evgeniy').save()
+        self.u = User.objects.get(username='evgeniy')
+
+    def test_Refresh_01(self):
+
+        Settings.refresh(self.u)
+
+        g = self.u.settings.filter(code='google').first().value
+        self.assertEqual(g, 'Y')
+
+        self.assertEqual(Settings.get(self.u, 'google'), 'Y')
+
+        try:
+            self.assertIsNone(Settings.get(self.u, 'shmoogle'))
+        except SettingsCodeDoesNotExists:
+            pass
+
+
+    def test_Set_02(self):
+        Settings.refresh(self.u)
+
+        try:
+            Settings.set(self.u, 'some setting', 'Cool!')
+        except SettingsCodeDoesNotExists:
+            pass
+
+        Settings.set(self.u, 'google', 'N')
+        self.assertEqual(Settings.get(self.u, 'google'), 'N')
+
 
 def main():
     pass

@@ -4,76 +4,68 @@
 require('whatwg-fetch')
 import { shallow } from 'enzyme';
 
-import App from "../App";
-import mockFetch from "../../Mocks";
-import { asyncWrap } from "../../Mocks";
-import { allActivities, allEvents, allTasks, allTimeRecords}
-  from "../../App.test_data";
+import App from "../components/App";
+import mockFetch from "../Mocks";
+import { asyncWrap } from "../Mocks";
 import React from "react";
 
 
-jest.mock("../App.css", () => {})
+jest.mock("../components/App.css", () => {})
 jest.spyOn(window, 'fetch').mockImplementation(mockFetch)
 
 // Initializing app for testing
-const app = shallow(<App/>)
-app.setState({
-    'allEvents': allEvents,
-    'allTasks': allTasks,
-    'allActivities': allActivities,
-    'allTimeRecords': allTimeRecords,
-  })
-const appInstance = app.instance()
+const appShallow = shallow(<App/>)
+const app = appShallow.instance()
 
 // ===========================        TESTS        =============================
 
 test('At least one', () => {
-  expect(true).toBe(true)
+  expect(true).toBeTruthy()
 })
 
-// test('MIMA API: GET - each object type', async () => {
-//
-//   // INITIALIZATION
-//
-//   jest.spyOn(window, 'fetch').mockImplementation(mockFetch)
-//
-//   let fetchData
-//   const api = appInstance.api
-//
-//   // TESTING
-//
-//   // Tasks
-//   fetchData = await api.tasks.get()
-//   expect(fetchData.count).toBe(31)
-//   const tasks = fetchData.results
-//   expect(tasks[0].id).toBe(288)
-//
-//   // Events
-//   fetchData = await api.events.get()
-//   expect(fetchData.count).toBe(20)
-//   const events = fetchData.results
-//   expect(events[0].id).toBe(108)
-//
-//   // Activities
-//   fetchData = await api.activities.get()
-//   expect(fetchData.count).toBe(2)
-//   const activities = fetchData.results
-//   expect(activities[0].id).toBe(96)
-//
-//   // Time records
-//   fetchData = await api.timeRecords.get()
-//   expect(fetchData.count).toBe(20)
-//   const timeRecords = fetchData.results
-//   expect(timeRecords[1].id).toBe(2)
-//   expect(timeRecords[1].task).toBe(289)
-//
-//   // DE-INITIALIZATION
-//
-//   // Disable mock fetch
-//   window.fetch.mockRestore()
-// })
-//
-//
+test('MIMA API: GET - each object type', async () => {
+
+  // INITIALIZATION
+
+  jest.spyOn(window, 'fetch').mockImplementation(mockFetch)
+
+  let fetchData
+  const api = app.api
+
+  // TESTING
+
+  // Activities
+  fetchData = await api.activities.get()
+  expect(fetchData.count).toBe(1)
+  const activities = fetchData.results
+  expect(activities[0].id).toBe(132)
+
+  // Events
+  fetchData = await api.events.get()
+  expect(fetchData.count).toBe(2)
+  const events = fetchData.results
+  expect(events[0].id).toBe(1156)
+
+  // Tasks
+  fetchData = await api.tasks.get()
+  expect(fetchData.count).toBe(4)
+  const tasks = fetchData.results
+  expect(tasks[0].id).toBe(498)
+
+  // Time records
+  fetchData = await api.timeRecs.get()
+  expect(fetchData.count).toBe(5)
+  const timeRecords = fetchData.results
+  expect(timeRecords[1].id).toBe(1825)
+  expect(timeRecords[1].task).toBe(499)
+
+  // DE-INITIALIZATION
+
+  // Disable mock fetch
+  window.fetch.mockRestore()
+})
+
+
 // test('MIMA API: GET - getAll: Non Empty wrapped', done => {
 //
 //   // Call back on Success - all the validations

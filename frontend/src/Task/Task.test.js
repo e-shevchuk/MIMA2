@@ -41,7 +41,7 @@ test('fromDBJSON() 01', ()=>{
 })
 
 test('fromDBJSON() 02', ()=>{
-  const msg = "Task.initByDB(): 'id' is not provided"
+  const msg = "Task.initByDB(): 'id' is not exists"
 
   const dataWhole = {...allTasks[288]}
   delete dataWhole.id

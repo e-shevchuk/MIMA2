@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from mysite.models import Task, Event, Activity, Project, Time
+from mysite.models import Task, Event, Activity, Project, Time, Settings
 
 
 class ActivitySerializer(serializers.ModelSerializer):
@@ -30,3 +30,9 @@ class TimeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return Task.objects.create(**validated_data)
+
+class SettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Settings
+        fields = ['id', 'code', 'title', 'value']
+

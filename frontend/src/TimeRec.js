@@ -39,8 +39,6 @@ export default class TimeRec extends ScheduleElement{
     dictValidateDuration(data, 'duration', msg)
     dictValidateBoolean(data, 'complete', msg)
 
-    // Title
-    this.title = data.title
     // Duration
     this.duration = Number(moment.duration(data.duration))
     // Complete

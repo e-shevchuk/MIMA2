@@ -1,3 +1,10 @@
+const activities = [
+  {
+    "id": 132,
+    "title": "WorldTime cafe"
+  }
+]
+
 const events = [
   {
     "id": 1156,
@@ -6,7 +13,7 @@ const events = [
     "activity": 132,
     "google_calendar_id": "",
     "title": "WorldTime cafe",
-    "start": "2020-08-07T17:12:11.140288Z",
+    "start": "2020-08-07T17:12:11",
     "duration": "01:00:00"
   },
   {
@@ -16,15 +23,8 @@ const events = [
     "activity": 132,
     "google_calendar_id": "",
     "title": "WorldTime cafe",
-    "start": "2020-08-07T19:12:11.140288Z",
+    "start": "2020-08-07T19:12:11",
     "duration": "01:00:00"
-  }
-]
-
-const activities = [
-  {
-    "id": 132,
-    "title": "WorldTime cafe"
   }
 ]
 
@@ -107,11 +107,21 @@ const time = [
   }
 ]
 
+const settings = [
+  {
+    "id": 9,
+    "code": "google",
+    "title": "Google Calendar sync",
+    "value": "N"
+  }
+]
+
 const testData002 = {
   "events": events,
   "activities": activities,
   "tasks": tasks,
   "timeRecs": time,
+  "settings": settings,
 }
 export default testData002
 

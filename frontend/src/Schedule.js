@@ -1,12 +1,13 @@
 import {
   dictValidateID, dictValidateString, dictValidateDuration,
   dictValidateBoolean, dateStrUTCtoUnix, wrongID, wrongSinceNonStr,
-  wrongSinceEmptyStr, dictValidateKeys
+  wrongSinceEmptyStr, dictValidateKeys, sortPrevNextListForEvent
 } from "./service_functions";
 import Activity from "./Activity";
 import Event from "./Event";
 import Task from "./Task";
 import TimeRec from "./TimeRec";
+import JSONPretty from "react-json-pretty";
 
 export class ScheduleElementsSet {
   constructor() {
@@ -114,6 +115,8 @@ export default class Schedule {
     this.tasks = new ScheduleElementsSet()
     this.timeRecs = new ScheduleElementsSet()
 
+    this.eventFirst = undefined
+
     // Element types
     this.elSets = {
       'task': this.tasks,
@@ -121,6 +124,11 @@ export default class Schedule {
       'event': this.events,
       'activity': this.activities,
     }
+
+    // Indicate if holistic (all time records and references are up to date)
+    this.isHolistic = false
+    // Indicate if Schedule was initialized
+    this.isInited = false
 
     // Binding
     this.buildAllRefs = this.buildAllRefs.bind(this)
@@ -131,7 +139,6 @@ export default class Schedule {
     this.buildRefsTime = this.buildRefsTime.bind(this)
     this.buildRefsEvent = this.buildRefsEvent.bind(this)
     this.initByDBdata = this.initByDBdata.bind(this)
-    this.getAppState = this.getAppState.bind(this)
 
   }
 
@@ -159,12 +166,19 @@ export default class Schedule {
   initByDBdata(data){
     const msg = "Schedule.initByDBdata(): "
 
+    // Unpack values
+    const { activities, events, timeRecs, tasks } = data
+
+    // VALIDATIONS
+
+    // If it was initialized already
+    if(this.isInited)
+      // Don't allow to do that for the second time
+      throw new Error(msg + 'the Schedule was initialized already')
+
     // Validations - should have all the necessary data
     const keysToHave = ["activities", "timeRecs", "events", "tasks"]
     dictValidateKeys(data, keysToHave, msg)
-
-    // Unpack values
-    const { activities, events, timeRecs, tasks } = data
 
     // INITIALIZE "CURRENT" SCHEDULE
 
@@ -187,6 +201,7 @@ export default class Schedule {
 
     this.buildAllRefs()
 
+    this.isInited = true
   }
 
 
@@ -226,7 +241,7 @@ export default class Schedule {
     time.event = event
 
     // Activity
-    actyIdDB = time.event.dataDB.activity_id
+    actyIdDB = time.event.dataDB.activity
     activity = this.activities.getByidDB(actyIdDB)
     time.activity = activity
 
@@ -269,21 +284,21 @@ export default class Schedule {
     // Activity
     event.activity = activity
 
-    // Tasks
-    if(!task.pinned)
+    // Tasks (pinned / non-pinned)
+
+    if(task.pinned)
+      event.refTasksPinnedAdd(task)
+    else
       event.refTasksAdd(task)
 
-    // Tasks pinned
-    else
-      event.refTasksPinnedAdd(task)
+    // Time records (pinned / non-pinned)
 
-    // Time records
-    if(!task.pinned)
-      event.refTimeAdd(time)
-
-    // Time records pinned
-    else
+    if(task.pinned){
       event.refTimePinnedAdd(time)
+    }
+    else{
+      event.refTimeAdd(time)
+    }
 
     // Event previous
     if(prev)
@@ -304,7 +319,7 @@ export default class Schedule {
     // Pulling DB IDs
     prevIdDB = event.dataDB.prev || undefined
     nextIdDB = event.dataDB.next || undefined
-    actyIdDB = event.dataDB.activity_id || undefined
+    actyIdDB = event.dataDB.activity || undefined
 
     // Previous and next events
     event.prev = prevIdDB ? this.events.getByidDB(prevIdDB) : undefined
@@ -322,16 +337,95 @@ export default class Schedule {
 
   buildAllRefs(){
 
-    // Get all tasks & events IDs lists
-    let timeIDs = Object.keys(this.timeRecs.objs).map(id => Number(id))
-    let eventIDs = Object.keys(this.events.objs).map(id => Number(id))
+    // Build Tasks-related references
 
-    // Build refs for Tasks & Events
-    timeIDs.forEach((id) => this.buildRefsTime(this.timeRecs.get(id)))
-    eventIDs.forEach((id) => this.buildRefsEvent(this.events.get(id)))
+    // Get all the IDs unsorted
+    Object.keys(this.timeRecs.objs)
+      // Form tasks list
+      .map(id => this.timeRecs.get(id))
+        // Build references for each task
+        .forEach(t => this.buildRefsTime(t))
+
+    // Build Events-related references
+
+    // Get all the IDs unsorted
+    const events = Object.keys(this.events.objs)
+      // Form events list
+      .map(id => this.events.get(id))
+        // Sort events in the list
+        .sort((e1, e2) => e1.start > e2.start ? 1 : -1)
+
+    // Build references for each event
+    events.forEach(e => this.buildRefsEvent(e))
+
+    // Save the first event in the list
+    this.eventFirst = events[0]
+
+    this.isHolistic = true
   }
 
-  getAppState(){
-    return true
+  get appState(){
+    let msg = 'Schedule.getAppState(): '
+    let objTimeRecsPinned, objTimeRecs, eventApp, appTimeRecsPinned, appTimeRecs
+
+    // If the Schedule was updated or just created and fitted - that's wrong
+    if(!this.isHolistic)
+      throw new Error(msg + 'Unholistic Schedule appState request attempt')
+
+    let event = this.eventFirst
+    const events = []
+
+    do {
+
+      // EVENT TIME RECORDS LIST
+
+      // Pinned tasks time records
+      objTimeRecsPinned = event.refTimePinned
+      appTimeRecsPinned = objTimeRecsPinned.map(time => ({
+          "id": time.idApp,
+          "duration": time.duration,
+          "title": this.tasks.get(time.task.id).title,
+          "pinned": this.tasks.get(time.task.id).pinned,
+          "timeComplete": time.complete,
+          "taskComplete": this.tasks.get(time.task.id).complete,
+      }))
+
+      // Non-pinned tasks time records
+
+      // console.log(event.refTime)
+      objTimeRecs = event.refTime
+      appTimeRecs = objTimeRecs.map(time => ({
+          "id": time.idApp,
+          "duration": time.duration,
+          "title": this.tasks.get(time.task.id).title,
+          "pinned": this.tasks.get(time.task.id).pinned,
+          "timeComplete": time.complete,
+          "taskComplete": this.tasks.get(time.task.id).complete,
+      }))
+
+      // EVENT ITSELF
+
+      // Generate app event data
+      eventApp = {
+        "id": event.idApp,
+        "activityId": event.activity.id,
+        "title": event.title,
+        "feasibility": 1,
+        "start": event.start,
+        "duration": event.duration,
+      }
+
+      // Add time recs to the event
+      eventApp['time'] = [...appTimeRecsPinned, ...appTimeRecs]
+      // Add event to the list
+      events.push(eventApp)
+
+      // Switch to the next event
+      event = event.next
+    } while(event)
+
+    const stateUpdParams = {'events': events}
+
+    return stateUpdParams
   }
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import getCookie from "../service_functions";
+import getCookie from "./service_functions";
 import 'whatwg-fetch'
 
 class MIMApiBase {
@@ -9,7 +9,6 @@ class MIMApiBase {
 
     this.JSONFetch = this.JSONFetch.bind(this)
     this.createProperties = this.createProperties.bind(this)
-    this.pushToState = this.pushToState.bind(this)
     this.getTemporary = this.getTemporary.bind(this)
     this.getAll = this.getAll.bind(this)
   }
@@ -94,10 +93,10 @@ class MIMApiBase {
    */
 
   async getAll(onSuccess){
+    const msg = 'MIMApiBase.getAll(): '
     onSuccess = onSuccess || undefined
     let idDict = {}
     const fetchData = await this.get()
-
 
     if(fetchData.count === fetchData.results.length) {
       fetchData.results.map(obj => idDict[obj.id] = obj)
@@ -106,7 +105,6 @@ class MIMApiBase {
     } else {
       throw new Error("MIMApiBase.getAll(...) # of data points don't match")
     }
-
 
     return idDict
   }
@@ -388,6 +386,35 @@ class TimeRecordAPI extends MIMApiBase {
   }
 }
 
+class SettingsAPI extends MIMApiBase {
+  constructor(apiBranch, component) {
+    super()
+    this.apiBranch = apiBranch
+    this.component = component
+  }
+
+  createProperties(requestedProperties = undefined) {
+
+    // Event Template
+    const defaultProperties = {
+      "code": "",
+      "title": "",
+      "value": "",
+    }
+
+    // Merge requested properties into the Template
+    const completeProperties =
+      Object.assign(
+        defaultProperties,
+        requestedProperties
+      )
+
+    // Return what we've got
+    return completeProperties
+  }
+}
+
+
 
 class MIMApi {
   constructor(component) {
@@ -397,11 +424,34 @@ class MIMApi {
     this.tasks = new TaskAPI('tasks', component)
     this.events = new EventAPI('events', component)
     this.activities = new ActivityAPI( 'activities', component)
-    this.timeRecords = new TimeRecordAPI('time_records', component)
-
-    this.getAll = this.refreshAll.bind(this)
-
+    this.timeRecs = new TimeRecordAPI('time_records', component)
+    this.settings = new SettingsAPI('settings', component)
   }
+
+  async getAll(){
+
+    const [activities, events, time, tasks, settings]
+      = await Promise.all([
+        this.activities.getAll(),
+        this.events.getAll(),
+        this.timeRecs.getAll(),
+        this.tasks.getAll(),
+        this.settings.getAll(),
+      ])
+
+    const data = {
+      "events": events,
+      "activities": activities,
+      "tasks": tasks,
+      "timeRecs": time,
+      "settings": settings
+    }
+
+    return data
+  }
+
+
+
 }
 
 export default MIMApi;
