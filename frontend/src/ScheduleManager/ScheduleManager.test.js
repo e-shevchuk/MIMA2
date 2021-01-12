@@ -13,6 +13,8 @@ import App from "../components/App";
 import mockFetch, {mockFetchGetWithData} from "../Mocks";
 import { asyncWrap } from "../Mocks";
 import React from "react";
+import {DAYTIMEFORMAT, flushPromises} from "../service_functions";
+import moment from "moment";
 
 
 jest.mock("../components/App.css", () => {})
@@ -186,13 +188,14 @@ test('ScheduleManager.appState() 0405', async () => {
     .mockImplementation(mockFetchGetWithData(testData001))
 
   // Initializing app for testing
-  const appShallow = await mount(<App/>)
+  const appShallow = await shallow(<App/>)
   const app = await appShallow.instance()
+  await flushPromises()
 
   // TESTING
 
-  const as = await app.scheduleManager.current.appState
-//  expect(JSON.stringify(as)).toBe(JSON.stringify(stateUpdParams001))
+  const as = app.scheduleManager.current.appState
+  expect(JSON.stringify(as)).toBe(JSON.stringify(stateUpdParams001))
 
 
   // DE-INITIALIZATION
@@ -209,7 +212,7 @@ test('ScheduleManager.updTaskTitle() 0506', async () => {
 
   // TESTING
 
-  expect.assertions(7)
+  expect.assertions(6)
 
   // For non providing id
   try {
@@ -258,11 +261,6 @@ test('ScheduleManager.updTaskTitle() 0506', async () => {
 
   // Check DB image value
   expect(app.scheduleManager.current.tasks.dataDB[id].title)
-    .toBe('Enjoy sound')
-
-  // Check app value
-  console.log(app.state.events)
-  expect(app.state.events[0].time[0].title)
     .toBe('Enjoy sound')
 
   // DE-INITIALIZATION

@@ -10,6 +10,10 @@ export default class TimeRec extends ScheduleElement{
 
   constructor() {
     super({'type': 'TimeRec'})
+    this._next = undefined
+    this._prev = undefined
+
+    this.dataDBrefreshed = this.dataDBrefreshed.bind(this)
   }
 
   static fromDBJSON(json){
@@ -45,6 +49,57 @@ export default class TimeRec extends ScheduleElement{
     this.complete = data.complete
   }
 
+  /**
+   *  This purely internal function being called by ScheduleElement.dataDB
+   *  getter. It replaces referenced elements IDs that may be outdated with
+   *  their fresh version pulled from actual instances. Applicable to: next,
+   *  prev, ... etc.
+   *
+   *  @returns {{}} return a list of refreshed properties
+  **/
+
+  dataDBrefreshed(){
+
+    const refreshedValues = {}
+    if(this.next) refreshedValues['next'] = this.next.idDB
+    if(this.prev) refreshedValues['prev'] = this.prev.idDB
+    if(this.task) refreshedValues['task'] = this.task.idDB
+
+    return refreshedValues
+  }
+
+  dataDBrefreshed(){
+    const msg = 'TimeRec.dataDBrefreshed(): '
+
+    // VALIDATIONS
+
+    if(this.task === undefined)
+      throw new Error(msg + 'Task is undefined')
+
+    if(this.event === undefined)
+      throw new Error(msg + 'Event is undefined')
+
+    if(this.duration === undefined)
+      throw new Error(msg + 'Duration is undefined')
+
+    if(this.complete === undefined)
+      throw new Error(msg + '"Complete" is undefined')
+
+    // Convert duration in miliseconds into the DB format
+    const durationDB =
+      moment.duration(this.duration).format('hh:mm:ss', {trim:false})
+
+    return {
+    "id": this.idDB,
+    "task": this.task.idDB,
+    "event": this.event.idDB,
+    "prev": (this.prev === undefined)? null: this.prev.idDB,
+    "next": (this.next === undefined)? null: this.next.idDB,
+    "duration": durationDB,
+    "complete": this.complete,
+  }}
+
+
   // SETTERS & GETTERS
 
   // Parameters
@@ -57,9 +112,9 @@ export default class TimeRec extends ScheduleElement{
   set idApp(idApp)        {this._idApp = idApp}
   get idApp()             {return this._idApp}
 
-  // ID in DB
-  set idDB(idDB)          {this._idDB = idDB}
-  get idDB()              {return this._idDB}
+  // // ID in DB
+  // set idDB(idDB)          {this._idDB = idDB}
+  // get idDB()              {return this._idDB}
 
   // Duration
   set duration(duration)  {this._duration = duration}
@@ -80,11 +135,18 @@ export default class TimeRec extends ScheduleElement{
   get event()             {return this._event}
 
   // Time record next
-  set next(next)          {this._next = next}
+  set next(next) {
+    this._next = next
+    this.dataDB = {...this.dataDB, 'next': next.idDB}
+  }
+
   get next()              {return this._next}
 
   // Time record previous
-  set prev(prev)          {this._prev = prev}
+  set prev(prev) {
+    this._prev = prev
+    this.dataDB = {...this.dataDB, 'prev': prev.idDB}
+  }
   get prev()              {return this._prev}
 
   // Task
@@ -93,7 +155,7 @@ export default class TimeRec extends ScheduleElement{
 
   // Additional Stuff
 
-  // Data in backend DB form
-  set dataDB(dataDB)      {this._dataDB = dataDB}
-  get dataDB()            {return {...this._dataDB}}
+  // // // Data in backend DB form
+  // set dataDB(dataDB)      {super.dataDB(dataDB)}
+  // get dataDB()            {return {...super._dataDB}}
 }

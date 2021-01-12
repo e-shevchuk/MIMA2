@@ -32,13 +32,24 @@ export function wrongID(n) {
   return !(Number(n) > 0) || (String(n) === '0' || String(n) === '0.0')
 }
 
+/**
+ * Validate that:
+ * - provided object has a specified key
+ * - specified key meets the ID requirements
+ *
+ * @param {{}} data - Object dictionary
+ * @param {Number} key - Object key
+ * @param {Number} msg - Parent function description
+ *
+ * @returns {boolean} true, if value is convertable into number > 0
+ */
 export function dictValidateID(data, key, msg){
 
     if (!data)
-        throw new error('dictValidateID(data, key, msg): no data provided')
+        throw new Error('dictValidateID(data, key, msg): no data provided')
 
     if (!key)
-        throw new error('dictValidateID(data, key, msg): no key provided')
+        throw new Error('dictValidateID(data, key, msg): no key provided')
 
   // If message isn't provided - make in empty
   msg = msg || ''
@@ -246,5 +257,15 @@ export function sortPrevNextListForEvent(l) {
   return lSorted
 
 }
+
+
+/**
+ * Awaits untill all promisest were resolved
+**/
+export const flushPromises = () => {
+  return new Promise(resolve => setImmediate(resolve));
+}
+
+
 
 export default getCookie

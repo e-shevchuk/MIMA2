@@ -4,10 +4,13 @@ import Task from "../Task";
 import TimeRec from "../TimeRec";
 import Event from "../Event";
 import Activity from "../Activity";
-import { allActivities, allTimeRecords, allEvents, allTasks }
-        from './Schedule.test.data'
+import {allActivities, allTimeRecords, allEvents, allTasks, testData003}
+  from './Schedule.test.data'
 import testData001 from "../ScheduleManager/ScheduleManager.test.data";
-
+import MIMApi from "../MIMApi";
+import {mockFetchGetWithData} from "../Mocks";
+import testData002 from "../Mocks/Mocks.test.data";
+import update from 'immutability-helper';
 
 // SCHEDULE ELEMENTS SET (ScheduleElementsSet)
 
@@ -224,7 +227,6 @@ test('Schedule.addActivity() 02', ()=>{
   expect(schedule.timeRecs.get(1).duration).toBe(600000)
 })
 
-
 test('Schedule.buildRefsTime() 01', ()=>{
   const msg = "Schedule.addActivity(): "
   let json, acty, event, task, time
@@ -264,7 +266,6 @@ test('Schedule.buildRefsTime() 01', ()=>{
   expect(tr.event.id).toBe(1)
   expect(tr.activity.id).toBe(1)
 })
-
 
 test('Schedule.buildRefsTime() 0214', ()=>{
   const msg = "Schedule.addActivity(): "
@@ -483,6 +484,63 @@ test('Schedule.buildRefsTime() 0315', ()=>{
   expect(e(3).activity).toBe(a(1))
 })
 
+test('ScheduleElementsSet.getTimeInsertPrevNext 0329', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  // Micro-service function
+  const e = (id) => s.events.getByidApp(id)
+
+  expect(e(1157).refTimePinned.map(e => e.dataDB)).toStrictEqual(
+    [
+      {
+        id: 1829,
+        task: 504,
+        event: 1157,
+        prev: null,
+        next: 1830,
+        duration: '00:10:00',
+        complete: false
+      },
+      {
+        id: 1830,
+        task: 505,
+        event: 1157,
+        prev: 1829,
+        next: null,
+        duration: '00:20:00',
+        complete: false
+      }
+    ]
+  )
+
+  expect(e(1157).refTasksPinned.map(e => e.dataDB)).toStrictEqual(
+    [
+      {
+        id: 504,
+        title: 'New task 03(p)',
+        pinned: true,
+        duration: '00:10:00',
+        complete: false
+      },
+      {
+        id: 505,
+        title: 'New task 04(p)',
+        pinned: true,
+        duration: '00:10:00',
+        complete: false
+      }
+    ]
+  )
+
+  window.fetch.mockRestore()
+})
+
 test('Schedule.refTimePinned 0116', ()=>{
   const msg = "Schedule.addActivity(): "
   let json, acty, event, task, time
@@ -494,44 +552,37 @@ test('Schedule.refTimePinned 0116', ()=>{
   // HELPER FUNCTIONS
 
   // Data pulling functions
-  const getA = id => new Activity.fromDBJSON(JSON.stringify(activities[id]))
-  const getE = id => new Event.fromDBJSON(JSON.stringify(events[id]))
-  const getT = id => new Task.fromDBJSON(JSON.stringify(tasks[id]))
-  const getR = id => new TimeRec.fromDBJSON(JSON.stringify(timeRecs[id]))
-
-  // Build for first time record
-  const buildRefsT = id => schedule.buildRefsTime(schedule.timeRecs.get(id))
-  const buildRefsE = id => schedule.buildRefsEvent(schedule.events.get(id))
+  const getA = n => new Activity.fromDBJSON(JSON.stringify(activities[n]))
+  const getE = n => new Event.fromDBJSON(JSON.stringify(events[n]))
+  const getT = n => new Task.fromDBJSON(JSON.stringify(tasks[n]))
+  const getR = n => new TimeRec.fromDBJSON(JSON.stringify(timeRecs[n]))
 
   // Object getters
-  const tr = id => s.timeRecs.get(id)
-  const t = id =>  s.tasks.get(id)
   const e = id =>  s.events.get(id)
-  const a = id =>  s.activities.get(id)
 
   // CREATE UN-BUILT SCHEDULE
 
   // Activities
-  s.addActivity(getA(301))
-  s.addActivity(getA(302))
+  s.addActivity(getA(0))
+  s.addActivity(getA(1))
 
   // Events
-  s.addEvent(getE(101))
-  s.addEvent(getE(102))
-  s.addEvent(getE(103))
+  s.addEvent(getE(0))
+  s.addEvent(getE(1))
+  s.addEvent(getE(2))
 
   //Tasks
-  s.addTask(getT(201))
-  s.addTask(getT(202))
-  s.addTask(getT(203))
-  s.addTask(getT(204))
+  s.addTask(getT(0))
+  s.addTask(getT(1))
+  s.addTask(getT(2))
+  s.addTask(getT(3))
 
   // Time records
-  s.addTimeRec(getR(402))
-  s.addTimeRec(getR(403))
-  s.addTimeRec(getR(404))
-  s.addTimeRec(getR(405))
-  s.addTimeRec(getR(406))
+  s.addTimeRec(getR(0))
+  s.addTimeRec(getR(1))
+  s.addTimeRec(getR(2))
+  s.addTimeRec(getR(3))
+  s.addTimeRec(getR(4))
 
   // TESTING
 
@@ -553,4 +604,887 @@ test('Schedule.refTimePinned 0116', ()=>{
   // Pinned time references
   expect(e(101).refTime.length).toBe(2)
 
+})
+
+test('Schedule.copy 0317', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  expect(s2.isHolistic).toBeTruthy()
+
+  window.fetch.mockRestore()
+})
+
+test('ScheduleElementsSet.diff 0418', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  s2.tasks.get(498).title = 'Listen to a cool muzz'
+  s2.tasks.get(499).title = 'Drink a cup of tea'
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {
+     '498': {...s2.tasks.get(498).dataDB, 'title': 'Listen to a cool muzz'},
+     '499': {...s2.tasks.get(499).dataDB, 'title': 'Drink a cup of tea'},
+    },
+  }
+
+  const diff02 = s1.tasks.diff(s2.tasks)
+  expect(diff02.update[498].getDataDB()).toStrictEqual(diff01.update[498])
+  expect(diff02.update[499].getDataDB()).toStrictEqual(diff01.update[499])
+
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0419', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  diff01.delete[498] = s2.tasks.objs[498].dataDB
+  delete s2.tasks.objs[498]
+
+  diff01.delete[499] = s2.tasks.objs[499].dataDB
+  delete s2.tasks.objs[499]
+
+  const diff02 = s1.tasks.diff(s2.tasks)
+  expect(diff02.delete[498].getDataDB()).toStrictEqual(undefined)
+  expect(diff02.delete[499].getDataDB()).toStrictEqual(undefined)
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0420', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  diff01.delete[498] = s2.tasks.objs[498].dataDB
+  diff01.delete[499] = s2.tasks.objs[499].dataDB
+  diff01.delete[500] = s2.tasks.objs[500].dataDB
+  diff01.delete[501] = s2.tasks.objs[501].dataDB
+  delete s2.tasks.objs[498]
+  delete s2.tasks.objs[499]
+  delete s2.tasks.objs[500]
+  delete s2.tasks.objs[501]
+
+  const diff02 = s1.tasks.diff(s2.tasks)
+  expect(diff02.delete[498].getDataDB()).toStrictEqual(undefined)
+  expect(diff02.delete[499].getDataDB()).toStrictEqual(undefined)
+  expect(diff02.delete[500].getDataDB()).toStrictEqual(undefined)
+  expect(diff02.delete[501].getDataDB()).toStrictEqual(undefined)
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0421', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  const t1 = {
+    "id": 502,
+    "title": "Build a bridge",
+    "pinned": true,
+    "duration": "01:40:00",
+    "complete": true
+  }
+
+  const t2 = {
+    "id": 503,
+    "title": "Launch a spaceship",
+    "pinned": true,
+    "duration": "01:40:00",
+    "complete": true
+  }
+
+  s2.addTask(Task.fromDB(t1))
+  diff01.create[t1.id] = t1
+
+  s2.addTask(Task.fromDB(t2))
+  diff01.create[t2.id] = t2
+
+  const diff02 = s1.tasks.diff(s2.tasks)
+  expect(diff02.create[502].getDataDB()).toStrictEqual(diff01.create[502])
+  expect(diff02.create[503].getDataDB()).toStrictEqual(diff01.create[503])
+
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0422', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  const s2 =  s1.copy()
+
+  delete s1.tasks.objs[498]
+  delete s1.tasks.objs[499]
+  delete s1.tasks.objs[500]
+  delete s1.tasks.objs[501]
+  delete s2.tasks.objs[498]
+  delete s2.tasks.objs[499]
+  delete s2.tasks.objs[500]
+  delete s2.tasks.objs[501]
+
+
+  const t1 = {
+    "id": 502,
+    "title": "Build a bridge",
+    "pinned": true,
+    "duration": "01:40:00",
+    "complete": true
+  }
+
+  const t2 = {
+    "id": 503,
+    "title": "Launch a spaceship",
+    "pinned": true,
+    "duration": "01:40:00",
+    "complete": true
+  }
+
+  s2.addTask(Task.fromDB(t1))
+  diff01.create[t1.id] = t1
+
+  s2.addTask(Task.fromDB(t2))
+  diff01.create[t2.id] = t2
+
+  const diff02 = s1.tasks.diff(s2.tasks)
+  expect(diff02.create[502].getDataDB()).toStrictEqual(diff01.create[502])
+  expect(diff02.create[503].getDataDB()).toStrictEqual(diff01.create[503])
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0423', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+  const s2 =  s1.copy()
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  // Update
+
+  s2.tasks.get(498).title = 'Listen to a cool music'
+  diff01.update[498] = s2.tasks.get(498).dataDB
+
+  s2.tasks.get(499).title = 'Drink a cup of tea'
+  diff01.update[499] = s2.tasks.get(499).dataDB
+
+  // Remove
+
+  diff01.delete[500] = s2.tasks.get(500).dataDB
+  delete s2.tasks.objs[500]
+
+  diff01.delete[501] = s2.tasks.get(501).dataDB
+  delete s2.tasks.objs[501]
+
+  // Add
+
+  const t1 = {
+    "id": 502,
+    "title": "Build a bridge",
+    "pinned": true,
+    "duration": "01:40:00",
+    "complete": true
+  }
+
+  const t2 = {
+    "id": 503,
+    "title": "Launch a spaceship",
+    "pinned": true,
+    "duration": "01:40:00",
+    "complete": true
+  }
+
+
+  s2.addTask(Task.fromDB(t1))
+  diff01.create[502] = s2.tasks.get(502).dataDB
+  diff01.update[502] = s2.tasks.get(502).dataDB
+
+  s2.addTask(Task.fromDB(t2))
+  diff01.create[503] = s2.tasks.get(503).dataDB
+  diff01.update[503] = s2.tasks.get(503).dataDB
+
+  // Validations
+
+  const diff02 = s1.tasks.diff(s2.tasks)
+  expect(diff02.create[502].getDataDB()).toStrictEqual(diff01.create[502])
+  expect(diff02.create[503].getDataDB()).toStrictEqual(diff01.create[503])
+  expect(diff02.delete[500].getDataDB()).toStrictEqual(undefined)
+  expect(diff02.delete[501].getDataDB()).toStrictEqual(undefined)
+  expect(diff02.update[502].getDataDB()).toStrictEqual(diff01.update[502])
+  expect(diff02.update[503].getDataDB()).toStrictEqual(diff01.update[503])
+  expect(diff02.update[498].getDataDB()).toStrictEqual(diff01.update[498])
+  expect(diff02.update[499].getDataDB()).toStrictEqual(diff01.update[499])
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0424', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  delete s1.tasks.objs[498]
+  delete s1.tasks.objs[499]
+  delete s1.tasks.objs[500]
+  delete s1.tasks.objs[501]
+  delete s2.tasks.objs[498]
+  delete s2.tasks.objs[499]
+  delete s2.tasks.objs[500]
+  delete s2.tasks.objs[501]
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  expect(s1.tasks.diff(s2.tasks)).toStrictEqual(diff01)
+
+  window.fetch.mockRestore()
+
+})
+
+test('ScheduleElementsSet.diff 0425', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData002))
+
+  const api = new MIMApi()
+  const s1 = new Schedule()
+  s1.initByDBdata(await api.getAll())
+
+  const s2 =  s1.copy()
+
+  const diff01 = {
+    "create": {},
+    "delete": {},
+    "update": {},
+  }
+
+  expect(s1.tasks.diff(s2.tasks)).toStrictEqual(diff01)
+
+  window.fetch.mockRestore()
+
+})
+
+test('Schedule.timeInsert 0526', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  const timeDBrecordToBe = {
+    "task": 502,
+    "event": 1156,
+    "prev": 1824,
+    "next": 1825,
+    "duration": 600000,
+    "title": "New task 01",
+    "pinned": false,
+    "timeComplete": false,
+    "taskComplete": false,
+  }
+
+  const timeDBrecord = s.timeInsert(
+    502,
+    1156,
+    1824,
+    true,
+    "00:10:00")
+
+
+  delete timeDBrecord.time
+  expect(timeDBrecord).toStrictEqual(timeDBrecordToBe)
+
+  window.fetch.mockRestore()
+
+})
+
+test('Schedule.timeInsert 0527', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  const timeDBrecordToBe = {
+    "task": 502,
+    "event": 1157,
+    "prev": 1828,
+    "next": null,
+    "duration": 600000,
+    "title": "New task 01",
+    "pinned": false,
+    "timeComplete": false,
+    "taskComplete": false,
+  }
+
+  const timeDBrecord = s.timeInsert(
+    502,
+    1157,
+    1828,
+    true,
+    "00:10:00")
+
+
+  delete timeDBrecord.time
+  expect(timeDBrecord).toStrictEqual(timeDBrecordToBe)
+
+  window.fetch.mockRestore()
+
+})
+
+test('Schedule.timeInsert 0530', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  const timeDBrecordToBe = {
+    "task": 502,
+    "event": 1156,
+    "prev": null,
+    "next": 1824,
+    "duration": 600000,
+    "title": "New task 01",
+    "pinned": false,
+    "timeComplete": false,
+    "taskComplete": false,
+  }
+
+  const timeDBrecord = s.timeInsert(
+    502,
+    1156,
+    1824,
+    false,
+    "00:10:00")
+
+  delete timeDBrecord.time
+  expect(timeDBrecord).toStrictEqual(timeDBrecordToBe)
+
+  window.fetch.mockRestore()
+
+})
+
+test('Schedule.getTimeInsertPN 0628', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  let pn
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  // Micro-service function
+  const e = (id) => s.events.getByidApp(id)
+  const t = (id) => s.timeRecs.getByidApp(id)
+  const f = (a, b, c, d) => s.getTimeInsertPN(a, b, c, d)
+
+  const msgErrNoPosUnPin =
+    "Schedule.getTimeInsertPN(): Unpinned time record without position"
+
+  expect.assertions(16)
+
+  // UNPINNED WITH NO POSITION
+
+  // Between two records
+  try {
+    let {prev, next} = f(false, e(1156))
+  } catch (e) {
+    expect(e.message).toBe(msgErrNoPosUnPin)
+  }
+
+  // To be last
+  try {
+    f(false, e(1157))
+  } catch (e) {
+    expect(e.message).toBe(msgErrNoPosUnPin)
+  }
+
+  // To an empty event with time records in previous events
+  try {
+    f(false, e(1160))
+  } catch (e) {
+    expect(e.message).toBe(msgErrNoPosUnPin)
+  }
+
+  // To an empty standalone event
+  try {
+    f(false, e(1159))
+  } catch (e) {
+    expect(e.message).toBe(msgErrNoPosUnPin)
+  }
+
+  // UNPINNED WITH POSITION
+
+  // Between two records, using after=true
+  pn = f(false, e(1156), t(1824), true)
+  expect([pn.prev.idApp, pn.next.idApp])
+    .toStrictEqual([1824, 1825])
+
+  // Between two records, using after=false
+  pn = f(false, e(1156), t(1825), false)
+  expect([pn.prev.idApp, pn.next.idApp])
+    .toStrictEqual([1824, 1825])
+
+  // First, using after=false
+  pn = f(false, e(1156), t(1824), false)
+  expect([pn.prev, pn.next.idApp])
+    .toStrictEqual([undefined, 1824])
+
+  // Last, using after=true
+  pn = f(false, e(1157), t(1828), true)
+  expect([pn.prev.idApp, pn.next])
+    .toStrictEqual([1828, undefined])
+
+  // PINNED WITH NO POSITION
+
+  // To existing pinned records
+  pn = f(true, e(1157))
+  expect([pn.prev.idApp, pn.next])
+    .toStrictEqual([1830, undefined])
+
+  // To an empty event
+  pn = f(true, e(1159))
+  expect([pn.prev, pn.next])
+    .toStrictEqual([undefined, undefined])
+
+  // To an empty event with non pinned records
+  pn = f(true, e(1156))
+  expect([pn.prev, pn.next])
+    .toStrictEqual([undefined, undefined])
+
+  // PINNED WITH POSITION
+
+  // Between two records, using after=true
+  pn = f(true, e(1157), t(1829), true)
+  expect([pn.prev.idApp, pn.next.idApp])
+    .toStrictEqual([1829, 1830])
+
+  // Between two records, using after=false
+  pn = f(true, e(1157), t(1830), false)
+  expect([pn.prev.idApp, pn.next.idApp])
+    .toStrictEqual([1829, 1830])
+
+  // First, using after=false
+  pn = f(true, e(1157), t(1829), false)
+  expect([pn.prev, pn.next.idApp])
+    .toStrictEqual([undefined, 1829])
+
+  // Last, using after=true
+  pn = f(true, e(1157), t(1830), true)
+  expect([pn.prev.idApp, pn.next])
+    .toStrictEqual([1830, undefined])
+
+  // INCONSISTENT EVENT & TIME
+
+  const msgInconsistentEventVStime =
+    "Schedule.getTimeInsertPN(): The event 1159 have no time record 1830"
+
+  // Last, using after=true with wrong event
+  try {
+    f(true, e(1159), t(1830), true)
+  } catch (e) {
+    expect(e.message).toBe(msgInconsistentEventVStime)
+  }
+
+  window.fetch.mockRestore()
+})
+
+test('Schedule.taskInsert 0731', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const sched = new Schedule()
+  sched.initByDBdata(await api.getAll())
+
+  // Micro-service function
+  const e = (id) => sched.events.getByidApp(id)
+  const t = (id) => sched.timeRecs.getByidApp(id)
+
+
+  // Inserting task to the schedule
+  const task = sched.taskInsert(
+    'Cool task',
+    false
+  )
+
+  // Linking the task to the event by inserting time record
+  const tins = sched.timeInsert(
+    task.idApp,
+    1156,
+    1824,
+    true,
+    "00:10:00"
+  )
+
+  // Validate
+
+  // Remove task id since it is different every time
+  delete tins.task
+  delete tins.time
+  expect(tins).toStrictEqual({
+    event: 1156,
+    duration: 600000,
+    title: 'Cool task',
+    pinned: false,
+    timeComplete: false,
+    taskComplete: false,
+    prev: 1824,
+    next: 1825
+  })
+
+  window.fetch.mockRestore()
+})
+
+test('Schedule.createTask 0832', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  let taskCreated
+
+  const api = new MIMApi()
+  const sched = new Schedule()
+  sched.initByDBdata(await api.getAll())
+
+  // Inserting unpinned task to the schedule
+
+  taskCreated = sched.createTask(
+    'Cool task',
+    false,
+    1156
+    )
+
+  delete taskCreated.task
+  delete taskCreated.time
+  expect(taskCreated).toStrictEqual({
+    event: 1156,
+    duration: 600000,
+    title: 'Cool task',
+    pinned: false,
+    timeComplete: false,
+    taskComplete: false,
+    prev: 1825,
+    next: 1826
+  })
+  expect(sched.appState.events[0].time[2].title).toBe('Cool task')
+
+  // Inserting unpinned task to the schedule
+
+  taskCreated = sched.createTask(
+    'Amazing',
+    true,
+    1156
+    )
+
+  expect(sched.appState.events[0].time[0].title).toBe('Amazing')
+  delete taskCreated.task
+  delete taskCreated.time
+  expect(taskCreated).toStrictEqual({
+    event: 1156,
+    duration: 600000,
+    title: 'Amazing',
+    pinned: true,
+    timeComplete: false,
+    taskComplete: false,
+    prev: null,
+    next: null
+  })
+
+  window.fetch.mockRestore()
+})
+
+test('Schedule.createTask 0833', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  let taskCreated
+
+  const api = new MIMApi()
+  const sched = new Schedule()
+  sched.initByDBdata(await api.getAll())
+
+  // Inserting pinned task to the schedule
+
+  taskCreated = sched.createTask(
+    'Cool task',
+    true,
+    1157
+    )
+
+  delete taskCreated.task
+  delete taskCreated.time
+  expect(taskCreated).toStrictEqual({
+    event: 1157,
+    duration: 600000,
+    title: 'Cool task',
+    pinned: true,
+    timeComplete: false,
+    taskComplete: false,
+    prev: 1830,
+    next: null
+  })
+  expect(sched.appState.events[1].time[2].title).toBe('Cool task')
+
+  // Inserting unpinned task to the schedule
+
+  taskCreated = sched.createTask(
+    'Amazing',
+    true,
+    1157,
+    '00:20:00',
+    1830,
+    false
+    )
+
+  expect(sched.appState.events[1].time[1].title).toBe('Amazing')
+  delete taskCreated.task
+  delete taskCreated.time
+  expect(taskCreated).toStrictEqual({
+    event: 1157,
+    duration: 1200000,
+    title: 'Amazing',
+    pinned: true,
+    timeComplete: false,
+    taskComplete: false,
+    prev: 1829,
+    next: 1830
+  })
+
+  window.fetch.mockRestore()
+})
+
+test('Schedule.createTask 0834', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  let taskCreated
+
+  const api = new MIMApi()
+  const sched = new Schedule()
+  sched.initByDBdata(await api.getAll())
+
+  // Inserting unpinned task to the schedule
+
+  taskCreated = sched.createTask(
+    'Cool task',
+    false,
+    1156
+    )
+  const newTaskID = taskCreated.task
+  const newTimeID = taskCreated.time
+
+  delete taskCreated.task
+  delete taskCreated.time
+  expect(taskCreated).toStrictEqual({
+    event: 1156,
+    duration: 600000,
+    title: 'Cool task',
+    pinned: false,
+    timeComplete: false,
+    taskComplete: false,
+    prev: 1825,
+    next: 1826
+  })
+  expect(sched.appState.events[0].time[2].title).toBe('Cool task')
+
+
+  sched.tasks.onCreateSuccess(
+    newTaskID,
+    {...sched.tasks.dataDB[newTaskID]},
+    {...sched.tasks.dataDB[newTaskID], 'id': 8888}
+  )
+
+  sched.timeRecs.onCreateSuccess(
+    newTimeID,
+    {...sched.timeRecs.dataDB[newTimeID]},
+    {...sched.timeRecs.dataDB[newTimeID], 'id': 9999}
+  )
+
+  window.fetch.mockRestore()
+})
+
+
+
+test('Schedule.fit 0626', async ()=> {
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  s.fit()
+
+  expect(true).toBeTruthy()
+
+  window.fetch.mockRestore()
+})
+
+
+test('ScheduleElementsSet.onCreateSuccess() 0727', async () => {
+
+  let dataDBold, dataDBnew
+
+  jest.spyOn(window, 'fetch')
+    .mockImplementation(mockFetchGetWithData(testData003))
+
+  const api = new MIMApi()
+  const s = new Schedule()
+  s.initByDBdata(await api.getAll())
+
+  const t =
+    s.createTask('Amazingly cool task', false, 1156)
+
+
+  dataDBold = s.timeRecs.get(t.time).dataDB
+  dataDBnew = {...dataDBold, 'id': 555}
+  s.timeRecs.onCreateSuccess(t.time, dataDBold, dataDBnew)
+
+  dataDBold = s.tasks.get(t.task).dataDB
+  dataDBnew = {...dataDBold, 'id': 5555}
+  s.tasks.onCreateSuccess(t.task, dataDBold, dataDBnew)
+
+  const sCopy = s.copy()
+
+  // TODO: Fix this results with assertions
+  expect(sCopy.timeRecs.dataDB[1825]).toStrictEqual(
+    {
+      id: 1825,
+      task: 499,
+      event: 1156,
+      prev: 1824,
+      next: 555,
+      duration: '00:30:00',
+      complete: false
+    })
+
+  expect(sCopy.timeRecs.dataDB[555]).toStrictEqual(
+  {
+    id: 555,
+    task: 5555,
+    event: 1156,
+    prev: 1825,
+    next: 1826,
+    duration: '00:10:00',
+    complete: false
+  })
+
+  expect(sCopy.timeRecs.dataDB[1826]).toStrictEqual(
+  {
+    id: 1826,
+    task: 499,
+    event: 1157,
+    prev: 555,
+    next: 1827,
+    duration: '00:30:00',
+    complete: false
+  })
+
+  window.fetch.mockRestore()
 })

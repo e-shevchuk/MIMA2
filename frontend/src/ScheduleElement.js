@@ -1,12 +1,15 @@
 import {
   dictValidateID,
   dictValidateString,
-  jsonValidate
+  jsonValidate, wrongID
 } from "./service_functions";
 
 export default class ScheduleElement {
   constructor(params) {
     const msg = 'ScheduleElement.constructor(): '
+
+    this._dataDB = {}
+    this._refsBuilt = false
 
     // ELEMENT TYPE
 
@@ -50,6 +53,9 @@ export default class ScheduleElement {
     // Validations
     dictValidateID(data, 'id', msg)
 
+    // Save DB format initial data
+    this.dataDB = data
+
     // Setting up IDs
 
     this.id = Number(data.id)
@@ -58,10 +64,6 @@ export default class ScheduleElement {
 
     // Setting up all other fields
     this.initByDB_DataFields(data)
-
-    // Initial data in DB format
-    this.dataDB = data
-
   }
 
   // SETTERS & GETTERS
@@ -80,12 +82,50 @@ export default class ScheduleElement {
   get idApp()                   {return this._idApp}
 
   // ID in DB
-  set idDB(idDB)                {this._idDB = idDB}
-  get idDB()                    {return this._idDB}
+  set idDB(idDB) {
+    const msg = '[setter] ScheduleElement.idDB: '
+
+    // Validation
+    if(wrongID(idDB))
+      throw new Error("Wrong idDB: " + String(idDB))
+
+    // Update value
+    this._idDB = idDB
+  }
+
+  get idDB() {
+    const msg = '[getter] ScheduleElement.idDB: '
+
+    // Validation
+    if(this._idDB === undefined)
+      throw new Error('idDB is not initialized')
+
+    // pull the value
+    return this._idDB
+  }
 
 
   // Data in DB format
   set dataDB(dataDB)            {this._dataDB = dataDB}
-  get dataDB()                  {return this._dataDB}
+  get dataDB() {
+    const msg = 'Schedule.Element.dataDB(): '
+
+    // Validate that if refs are built dataDBrefreshed() should be defined
+    if(this.refsBuilt)
+      if(this.dataDBrefreshed === undefined){
+        const errMsg = 'Object with built refs dataDBrefreshed() undefined'
+        throw new Error(msg + errMsg)
+      }
+
+    // If refs are built than dataDB may be outdated, so we have generate
+    if(!this.refsBuilt)
+      return {...this._dataDB}
+    else
+      return {...this.dataDBrefreshed()}
+  }
+
+  // Refs built indicator
+  set refsBuilt(refsBuilt)      {this._refsBuilt = refsBuilt}
+  get refsBuilt()               {return this._refsBuilt}
 }
 

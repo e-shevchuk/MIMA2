@@ -19,7 +19,38 @@ export default class Task extends ScheduleElement{
     // Binding
     this.refEventsAdd = this.refEventsAdd.bind(this)
     this.refTimeAdd = this.refTimeAdd.bind(this)
+    this.dataDBrefreshed = this.dataDBrefreshed.bind(this)
   }
+
+  dataDBrefreshed(){
+    const msg = 'Task.dataDBrefreshed(): '
+
+    // VALIDATIONS
+
+    if(this.title === undefined)
+      throw new Error(msg + 'Title is undefined')
+
+    if(this.pinned === undefined)
+      throw new Error(msg + '"Pinned" is undefined')
+
+    if(this.duration === undefined)
+      throw new Error(msg + 'Duration is undefined')
+
+    if(this.complete === undefined)
+      throw new Error(msg + '"Complete" is undefined')
+
+    // Convert duration in miliseconds into the DB format
+    const durationDB =
+      moment.duration(this.duration).format('hh:mm:ss', {trim:false})
+
+    return {
+    "id": this.idDB,
+    "title": this.title,
+    "pinned": this.pinned,
+    "duration": durationDB,
+    "complete": this.complete
+  }}
+
 
   static fromDBJSON(json){
     // Create an empty instance
@@ -43,13 +74,13 @@ export default class Task extends ScheduleElement{
     const msg = this.type + '.initByDB_DataFields(): '
 
     // Validations
-    dictValidateString(data, 'title', msg)
+    // dictValidateString(data, 'title', msg)
     dictValidateDuration(data, 'duration', msg)
     dictValidateBoolean(data, 'complete', msg)
     dictValidateBoolean(data, 'pinned', msg)
 
     // Title
-    this.title = data.title
+    this.title = ('title' in data) ? data.title : ''
     // Duration
     this.duration = Number(moment.duration(data.duration))
     // Complete
@@ -68,7 +99,10 @@ export default class Task extends ScheduleElement{
   // Parameters
 
   // Title
-  set title(title)        {this._title = title}
+  set title(title) {
+    this._title = title
+    this.dataDB = {...this.dataDB, 'title': title}
+  }
   get title()             {return this._title}
 
   // Duration
@@ -104,10 +138,4 @@ export default class Task extends ScheduleElement{
   // Time records
   get refTime()           {return [...this._refTime]}
   refTimeAdd(t)           {this._refTime.add(t)}
-
-  // Additional Stuff
-
-  // Data in backend DB form
-  set dataDB(dataDB)      {this._dataDB = dataDB}
-  get dataDB()            {return {...this._dataDB}}
 }

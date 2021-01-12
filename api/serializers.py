@@ -29,7 +29,7 @@ class TimeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
-        return Task.objects.create(**validated_data)
+        return Time.objects.create(**validated_data)
 
 class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
