@@ -4,7 +4,7 @@ import {
   dictValidateDate,
   dictValidateDuration,
   dateStrUTCtoUnix,
-  sortPrevNextListForEvent
+  sortPrevNextListForEvent, DAYTIMEFORMAT
 }
   from "./service_functions"
 import moment from "moment";
@@ -34,6 +34,42 @@ export default class Event extends ScheduleElement{
     this.refTasksPinnedAdd = this.refTasksPinnedAdd.bind(this)
     this.refTimePinnedAdd = this.refTimePinnedAdd.bind(this)
   }
+
+  dataDBrefreshed(){
+    const msg = 'Event.dataDBrefreshed(): '
+
+    // VALIDATIONS
+
+    if(this.activity === undefined)
+      throw new Error(msg + 'Activity is undefined')
+
+    if(this.title === undefined)
+      throw new Error(msg + 'Title is undefined')
+
+
+    if(this.start === undefined)
+      throw new Error(msg + 'Event is undefined')
+
+    if(this.duration === undefined)
+      throw new Error(msg + 'Duration is undefined')
+
+    // Convert duration in miliseconds into the DB format
+    const durationDB =
+      moment.duration(this.duration).format('hh:mm:ss', {trim:false})
+
+    // Convert start in miliseconds into the DB format
+    const startDB =
+      moment(this.start, 'x').format(DAYTIMEFORMAT)
+
+    return {
+    "id": this.idDB,
+    "prev": (this.prev === undefined)? null: this.prev.idDB,
+    "next": (this.next === undefined)? null: this.next.idDB,
+    "activity": this.activity.idDB,
+    "title": this.title,
+    "start": startDB,
+    "duration": durationDB,
+  }}
 
   static fromDBJSON(json){
     // Create an empty instance
@@ -110,7 +146,10 @@ export default class Event extends ScheduleElement{
     return [...this._refTime]
   }
 
-  refTimeAdd(t)                 {this._refTime.add(t)}
+  refTimeAdd(t) {
+    this.timeRecsSorted = false
+    this._refTime.add(t)
+  }
 
   // Tasks pinned
   get refTasksPinned()          {return [...this._refTasksPinned]}
@@ -128,7 +167,10 @@ export default class Event extends ScheduleElement{
     return [...this._refTimePinned]
   }
 
-  refTimePinnedAdd(t)           {this._refTimePinned.add(t)}
+  refTimePinnedAdd(t) {
+    this.timeRecsPSorted = false
+    this._refTimePinned.add(t)
+  }
 
   // Event next
   set next(next)                {this._next = next}
@@ -138,9 +180,4 @@ export default class Event extends ScheduleElement{
   set prev(prev)                {this._prev = prev}
   get prev()                    {return this._prev}
 
-  // Additional Stuff
-
-  // Data in backend DB form
-  set dataDB(dataDB)      {this._dataDB = dataDB}
-  get dataDB()            {return {...this._dataDB}}
 }

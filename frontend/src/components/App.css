@@ -34,6 +34,22 @@
     margin-right: -12px;
 }
 
+.task-props{
+    margin-top: -4px;
+    margin-bottom: -10px;
+    margin-right: -12px;
+}
+
+.task-property{
+    margin-bottom: -10px;
+    margin-top: -8px;
+    margin-left: -2px;
+    margin-right: -14px;
+    color: #057BFF;
+    cursor: default;
+}
+
+
 .duration-field{
     margin-top: -3px;
     margin-bottom: -10px;

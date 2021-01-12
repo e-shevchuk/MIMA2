@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import {Draggable, Droppable} from "react-beautiful-dnd";
 import ContentEditable from 'react-contenteditable';
 import TaskPin from "./TaskPin";
+import TaskTitleFldUIC from "./TaskTitleFldUIC";
+import TaskPinnedFldUIC from "./TaskPinnedFldUIC";
 
 function TaskCheckboxCompleteUIC(props){
 
@@ -22,19 +24,9 @@ function TaskCheckboxCompleteUIC(props){
   )
 }
 
-function TaskTitleFldUIC (props){
-  return (
-    <ContentEditable
-      tagname='Title'
-      style={{cursor: "text",}}
-      html={props.title}
-    />
-  )
-}
-
 function TaskDurationFldUIC (props) {
   return (
-    <div className="d-flex bd-highlight mr-auto mb-0 duration">
+    <div className="d-flex bd-highlight mr-1 mb-0 duration">
       <div
         className={"p-2 bd-highlight h5 text-prime duration-control "}
       >⊖</div>
@@ -47,9 +39,6 @@ function TaskDurationFldUIC (props) {
         className={"p-2 bd-highlight h5 text-prime duration-control"}
         onClick={() => true}
         >⊕</div>
-      <div className={"p-2 ml-1 bd-highlight h5 text-prime duration-control"}>
-          <TaskPin pinned={false} pinToggle={() => true}/>
-      </div>
     </div>
   )
 }
@@ -73,6 +62,8 @@ function TaskControlsUIC(props) {
 }
 
 export function TimeUIC(props){
+  const msg = '[TimeUIC()]'
+
   return (
     <div>
       <div className="media text-muted pt-1">
@@ -81,8 +72,15 @@ export function TimeUIC(props){
         <div className="media-body pb-1 mb-0 small border-bottom border-gray">
           <div className="d-flex mr-2 bd-highlight">
 
-            <TaskTitleFldUIC title={props.time.title}/>
+            <TaskTitleFldUIC
+              timeId={props.time.id}
+              title={props.time.title}
+              scheduleManager={props.scheduleManager}
+            />
             <TaskDurationFldUIC/>
+            <TaskPinnedFldUIC
+              pinned={props.time.pinned}
+            />
             <TaskControlsUIC/>
 
           </div>
@@ -93,6 +91,8 @@ export function TimeUIC(props){
 }
 
 export function TimeDraggableUIC(props) {
+  const msg = '[TimeDraggableUIC()]'
+
   return (
     <Draggable
       key={String(props.time.id)}
@@ -105,7 +105,7 @@ export function TimeDraggableUIC(props) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
         >
-          <TimeUIC time={props.time}/>
+          <TimeUIC time={props.time} scheduleManager={props.scheduleManager}/>
         </div>
       )}
 
@@ -115,10 +115,16 @@ export function TimeDraggableUIC(props) {
 }
 
 export default function TimeListUIC(props) {
+  const msg = '[TimeListUIC()]'
 
   // Generate the list with draggable Time Records
   const timeDraggables = props.timeRecs.map((ti, i) =>
-    <TimeDraggableUIC key={ti.id} time={ti} index={i}/>
+    <TimeDraggableUIC
+      key={ti.id}
+      time={ti}
+      index={i}
+      scheduleManager={props.scheduleManager}
+    />
   )
 
   return (

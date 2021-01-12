@@ -14,6 +14,7 @@ class MIMApiBase {
   }
 
   async JSONFetch(method = '', data = undefined) {
+    const msg = 'MIMApiBase.JSONFetch(): '
 
     // console.log('JSONFetch() param data:', data, 'method:', method)
 
@@ -60,11 +61,9 @@ class MIMApiBase {
 
     // FETCH
 
-    // console.log('JSONFetch fetch() ur:', url, 'options:', options)
-
     let fetchResult = await fetch(url, options)
-    // console.log('JSONFetch fetchResult:', fetchResult)
 
+    console.log(msg, 'url:', url, 'options', options, 'fetchResult:', fetchResult)
     return fetchResult
   }
 
@@ -115,6 +114,7 @@ class MIMApiBase {
   }
 
   async create(params, callOnSuccess, callOnFail) {
+    const msg = 'MIMApiBase.create(): '
 
     // INITIALIZATION
 
@@ -137,9 +137,6 @@ class MIMApiBase {
       // If the data is OK and onSuccess is provided - calll it
       if ('id' in data && callOnSuccess !== undefined) {
         callOnSuccess(data)
-
-        // console.log('create() state, after callOnSuccess() => push:',
-        //   this.stateBranch, this.component.state[this.stateBranch])
       }
     }
 
@@ -202,7 +199,7 @@ class MIMApiBase {
         onFail(params)
     }
 
-    return await data
+    return data
   }
 
   /**
@@ -210,13 +207,12 @@ class MIMApiBase {
    * @param {callBack} onSuccess function
    * @param {callBack} onFail function
    */
-  async delete({
-                 param,
-                 onSuccess = undefined,
-                 onFail = undefined
-               }) {
+  async delete(param, onSuccess, onFail) {
 
     console.log('delete() param:', param)
+
+    onSuccess = onSuccess || undefined
+    onFail = onFail || undefined
 
     let data
     let id = undefined
@@ -284,7 +280,6 @@ class TaskAPI extends MIMApiBase {
 
     // Task Template
     const defaultProperties = {
-      "project_id": "",
       "title": "",
       "duration": "00:10:00",
       "complete": false,

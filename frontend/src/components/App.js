@@ -25,14 +25,16 @@ class App extends Component {
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
-  componentDidMount() {
-    this.scheduleManager.init()
+  async componentDidMount() {
+    await this.scheduleManager.init()
   }
 
   render() {
+    const msg = '[app.render()]'
 
     window.api = this.api
     window.sm = this.scheduleManager
+    window.app = this
 
     if(this.state.events.length === 0) return(<div>Loading...</div>)
 
@@ -76,7 +78,10 @@ class App extends Component {
             </div>
 
             {/* EVENTS */}
-              <EventListUIC events={this.state.events}/>
+              <EventListUIC
+                events={this.state.events}
+                scheduleManager={this.scheduleManager}
+              />
           </div>
         </div>
 

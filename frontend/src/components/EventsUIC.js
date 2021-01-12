@@ -48,6 +48,8 @@ function EventFooterControls(props) {
 }
 
 function EventUIC(props){
+  const msg = '[EventUIC()]'
+
   return (
     <div>
       {/* EVENT BLOCK START */}
@@ -58,7 +60,11 @@ function EventUIC(props){
         <EventHeaderControls />
       </div>
 
-      <TimeListUIC eventId={props.event.id} timeRecs={props.event.time}/>
+      <TimeListUIC
+        eventId={props.event.id}
+        timeRecs={props.event.time}
+        scheduleManager={props.scheduleManager}
+      />
 
       <EventFooterControls />
 
@@ -70,7 +76,9 @@ export default function EventListUIC(props) {
 
   // Generate the EventUIC components list
   const events = props.events.map(e =>
-    <div key={e.id}><EventUIC event={e}/></div>
+    <div key={e.id}>
+      <EventUIC event={e} scheduleManager={props.scheduleManager}/>
+    </div>
   )
 
   return (

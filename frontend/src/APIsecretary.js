@@ -12,9 +12,9 @@ class APIsecretary {
   schedule(objectType, id, apiCall, apiCallProps) {
   /*
   It's like asking your secretary to bring a coffee. She will do it
-  in a few minutes, but if somebody else will as for a coffee too,
+  in a few minutes, but if somebody else will ask for a coffee too,
   she will forget about you and bring the coffee to that another
-  person with the same delay, if no one would as to... You got it.
+  person with the same delay, if no one would ask to... You got it.
   */
 
     // If there is no branch for current apiCall in the register - add it

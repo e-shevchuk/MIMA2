@@ -15,7 +15,7 @@ function TaskPin(props){
     <div
       className={checkBoxImgClass + " mr-2 rounded"}
       alt="Task pinned / unpinned"
-      onClick={pinToggle}
+      onClick={()=>0}
     >
       <PinOutline size="18" style={{display: pinned ? "none" : ""}}/>
       <Pin size="18" style={{display: pinned ? "" : "none"}}/>

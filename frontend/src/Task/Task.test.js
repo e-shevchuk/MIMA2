@@ -26,7 +26,7 @@ test('Simple properties', ()=>{
   expect(t.duration).toBe(7200000)
 })
 
-test('fromDBJSON() 01', ()=>{
+test('fromDBJSON() 0101', ()=>{
   const dataWhole = {...allTasks[288]}
   const json = JSON.stringify(dataWhole)
   const task = Task.fromDBJSON(json)
@@ -40,7 +40,7 @@ test('fromDBJSON() 01', ()=>{
   expect(task.dataDB.id).toBe(288)
 })
 
-test('fromDBJSON() 02', ()=>{
+test('fromDBJSON() 0202', ()=>{
   const msg = "Task.initByDB(): 'id' is not exists"
 
   const dataWhole = {...allTasks[288]}
@@ -54,34 +54,3 @@ test('fromDBJSON() 02', ()=>{
     expect(e.message).toBe(msg)
   }
 })
-
-test('fromDBJSON() 03', ()=>{
-  const msg = "Task.initByDB_DataFields(): 'title' is not provided"
-
-  const dataWhole = {...allTasks[288]}
-  delete dataWhole.title
-  const json = JSON.stringify(dataWhole)
-
-  expect.assertions(1)
-  try {
-    const task = Task.fromDBJSON(json)
-  } catch (e) {
-    expect(e.message).toBe(msg)
-  }
-})
-
-test('fromDBJSON() 04', ()=>{
-  const msg = "Task.initByDB_DataFields(): 'title' is empty"
-
-  const dataWhole = {...allTasks[288]}
-  dataWhole.title = ''
-  const json = JSON.stringify(dataWhole)
-
-  expect.assertions(1)
-  try {
-    const task = Task.fromDBJSON(json)
-  } catch (e) {
-    expect(e.message).toBe(msg)
-  }
-})
-
